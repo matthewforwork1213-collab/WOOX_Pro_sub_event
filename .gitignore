@@ -1,0 +1,49 @@
+# 민감 정보 (절대 커밋하지 마세요)
+.AP-key.md
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js
+.next/
+out/
+build/
+
+# 캐시
+.cache/
+.parcel-cache/
+*.tsbuildinfo
+
+# 운영체제
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# 로그
+logs/
+*.log
+
+# 임시 파일
+tmp/
+temp/
+
+# 빌드 산출물
+dist/
+
+# 테스트 커버리지
+coverage/
+.nyc_output/
