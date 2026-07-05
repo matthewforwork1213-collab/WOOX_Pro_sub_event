@@ -87,7 +87,7 @@
 | Screen | Platform | Location |
 |---|---|---|
 | S3 Login Page | PC | **Top area** of the page |
-| S4 Pre-Login Menu | MO / App (Webview) | **Directly below** the login/sign-up buttons |
+| S4 Pre-Login Menu | MO (Web) | **Directly below** the login/sign-up buttons |
 
 - Since this is pre-login, no user information is needed — displayed based **only on the global promotion active status (common gate)**.
 

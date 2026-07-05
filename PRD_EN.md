@@ -1,5 +1,12 @@
 # PRD: WOOX Pro Onboarding Anniversary 30-Day Intensive Promotion Feature Definition
 
+| Item | Content |
+|---|---|
+| Project Name | WOOX Pro Onboarding Anniversary 30-Day Intensive Promotion |
+| Date | 2026-06-30 |
+| Version | v1.2 |
+| Reference Documents | 00.통합자료실/고객자료/wooxprosub.docx (original brief, Korean only), 02.기획문서/마켓리서치.md (Korean only), 02.기획문서/서비스기획서.md (Korean only) |
+
 ---
 
 ## 1. Project Overview
@@ -16,12 +23,12 @@
 
 ### Feature 1: WOOX Pro Promotion Branch Exposure After Withdrawal Completion
 
-#### Existing Logic
+**Existing Logic**
 
 When a user completes a withdrawal (including simultaneous withdrawals across multiple exchanges), one of the currently running exchange events is randomly selected and displayed in ad form, based on on-screen priority.
 > Example: Insurance ad shown after a Toss money transfer
 
-#### Changed and New Logic (30-Day Limited)
+**Changed and New Logic (30-Day Limited)**
 
 **Case A: Withdrawals that do NOT include WOOX Pro**
 
@@ -46,7 +53,7 @@ When a user completes a withdrawal (including simultaneous withdrawals across mu
 
 > **Change History**: Switched from the previous "Dim overlay + forced popup modal" approach to a method that **inline-transforms the result page itself** (reflecting the OI-04 decision). Removing the popup/Dim overlay reduces forcefulness and drop-off rate, while naturally exposing the loss comparison within the result flow.
 
-#### Entry Context
+**Entry Context**
 
 Triggered at the moment the user enters the **[Result Page]** after entering the following conditions in 'Cashback Preview':
 - Exchange
@@ -55,7 +62,7 @@ Triggered at the moment the user enters the **[Result Page]** after entering the
 - Trade type
 - Trade frequency
 
-#### Operating Logic
+**Operating Logic**
 
 **Case A: The selected exchange is NOT WOOX Pro (e.g., Zoomex, BitMart, etc.)**
 
@@ -83,11 +90,11 @@ Triggered at the moment the user enters the **[Result Page]** after entering the
 
 ### Feature 3: WOOX Pro x Bithumb Travel Rule Integration Banner
 
-#### Purpose
+**Purpose**
 
 Display that WOOX Pro is **an exchange integrated with Bithumb via Travel Rule**, delivering a regulatory-compliance/trust signal to domestic users and lowering resistance to converting to WOOX Pro. (Not a Nudge, but a **static trust banner**)
 
-#### Banner Specification
+**Banner Specification**
 
 | Item | Content |
 |------|------|
@@ -98,17 +105,17 @@ Display that WOOX Pro is **an exchange integrated with Bithumb via Travel Rule**
 | **Click Behavior** | **None** (static banner with no navigation/link) |
 | **Exposure Policy** | **Promotion-limited** — subordinate to the common termination gate (2 WOOX Pro event terminations OR + D+30). All 5 positions removed upon termination. **Pre-login screens (#3, #4) are displayed based solely on global Promotion Active status, regardless of user session** |
 
-#### Exposure Positions (5)
+**Exposure Positions (5)**
 
 | # | Position | Details |
-|------|------|
+|------|------|------|
 | 1 | Bottom of Cashback Preview result | Feature 2 result page, below the inline comparison card |
 | 2 | Bottom of withdrawal result card (outside) | Feature 1 withdrawal completion screen, outside and at the bottom of the result card area |
 | 3 | Mobile Web · Pre-login | Directly below the login/sign-up button |
 | 4 | PC Web · Login page | Top area of the login page |
 | 5 | PC/Mobile · Post-login | Below the member ID on My Page |
 
-#### Compliance (Risk-Accepted Decision)
+**Compliance (Risk-Accepted Decision)**
 
 - **Management Decision**: Displayed first without prior legal approval, and **taken down immediately if an issue is raised** (risk-accepted). The means of "taking down" is the common Termination Gate (the termination buttons of the 2 WOOX Pro events — note that in this case all 3 features are terminated together; see the no-partial-termination policy in §3-3).
 - Logo assets: **Hardcoded in the design** (both Bithumb and WOOX Pro). No Admin registration, dynamic loading, or separate delivery required.
@@ -369,7 +376,7 @@ Beyond automatic expiration (D+30), the promotion can also be terminated early v
 ### Confirmed and Completed (reflected in §2-A)
 
 - [x] Calculation logic → **based on reverse calculation from the actual payback amount**, Commission Rate not used (only Payback Rate/Total Saving Rate used)
-- [x] Minimum exposure threshold → **1 USDT** (if positive but under 1 USDT, display as 1 USDT; 0/negative uses base logic)
+- [x] Exposure gating is based on **savings > 0** (displayed if positive). **Display floor of 1 USDT** (if positive but under 1 USDT, display as 1 USDT; 0/negative uses base logic) — 1 USDT is a display floor, not an exposure threshold
 - [x] Display currency/multilingual support → **USDT-only display + full multilingual support**, changes shown in **%p** units
 - [x] Feature 1/2 CTA destination → **navigate to the WOOX Pro exchange detail page**
 - [x] Feature 2 exposure method → **popup modal discarded, inline transformation of the result page (WOOX Pro comparison card below the result card)** (confirmed per OI-04)
@@ -434,7 +441,7 @@ To allow developers to begin work without omission on a **page/feature basis**, 
 | Category | Task |
 |------|------|
 | BE | Banner exposure determination based on the common promotion-active gate (including pre-login screens, **global determination regardless of user session**) |
-| FE | Banner component (**hardcoded logos** for Bithumb and WOOX Pro + KO "트레블룰 연동"/EN "Travel Rule Integration", logo first · text after fixed order, understated badge style, **no click**) · insert at 5 positions: #1 bottom of preview (S2) · #2 outside bottom of withdrawal card (S1) · #3 below pre-login button on MO (S4) · #4 top of PC login page (S3) · #5 below member ID on My Page (S5) · remove from all 5 places when Flag is OFF |
+| FE | Banner component (**hardcoded logos** for Bithumb and WOOX Pro + KO "트레블룰 연동"/EN "Travel Rule Integration", logo first · text after fixed order, understated badge style, **no click**) · insert at 5 positions: #1 bottom of preview (S2) · #2 outside bottom of withdrawal card (S1) · #3 below pre-login button on MO (S4) · #4 top of PC login page (S3) · #5 below member ID on My Page (S5) · remove from all 5 places when the common termination gate fires |
 | Target | S1, S2 = PC · MO · App (webview) / S3~S5 = Web (PC/MO) only (app-native areas excluded) |
 
 ### 6-4. Parallel Development · Termination Unit

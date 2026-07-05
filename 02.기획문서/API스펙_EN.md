@@ -31,7 +31,7 @@
 | 404 | NOT_FOUND | Resource not found (e.g., a non-existent exchange ID) |
 | 500 | INTERNAL_ERROR | Internal server error |
 
-> Promotion-related APIs do not treat "display condition not met" as an error. Adverse cases, unsupported cases, calculation failures, etc. are returned as 200 OK + `visible: false` (see Functional Specification_BE F-001 · F-003 exception handling).
+> Promotion-related APIs do not treat "display condition not met" as an error. Adverse cases, unsupported cases, calculation failures, etc. are returned as 200 OK + `visible: false` (see 기능명세서_BE_EN.md F-001 · F-003 exception handling).
 
 ---
 
@@ -82,7 +82,7 @@
 
 | Status Code | Error Code | Condition |
 |---|---|---|
-| 500 | INTERNAL_ERROR | Determination not possible, e.g., failure to query the event termination state — in this case the server prioritizes responding safely with `active: false` instead of an error (see Functional Specification_BE F-005 exception handling) |
+| 500 | INTERNAL_ERROR | Determination not possible, e.g., failure to query the event termination state — in this case the server prioritizes responding safely with `active: false` instead of an error (see 기능명세서_BE_EN.md F-005 exception handling) |
 
 ---
 
@@ -140,7 +140,7 @@
 | Status Code | Error Code | Condition |
 |---|---|---|
 | 400 | BAD_REQUEST | Missing `uids` parameter or format error |
-| 500 | INTERNAL_ERROR | Calculation failure — in this case the FE falls back to base logic (see Functional Specification_FE F-001 exception handling) |
+| 500 | INTERNAL_ERROR | Calculation failure — in this case the FE falls back to base logic (see 기능명세서_FE_EN.md F-001 exception handling) |
 
 ---
 

@@ -65,7 +65,7 @@
 | NFR-001 | Performance | The response speed of the Virtual Feedback / Comparison Card calculation API must not cause perceptible delay to the user | Average calculation API response within 500ms (PM-proposed value, subject to adjustment upon confirmation) |
 | NFR-002 | Security | Internal settlement figures (Discount Rate, Payback Rate, Correction Factor, Commission Rate, Margin Rate) must not be exposed anywhere in the API response or the client bundle | The API response payload includes only result values (amount, %p), with no raw-data fields |
 | NFR-003 | Accessibility / Internationalization | All user-facing copy in Features 1, 2, and 3 must be provided in translation for every language supported by the TetherMax platform | 100% coverage of supported languages (fallback language displayed if missing) |
-| NFR-004 | Availability | The reflection of promotion termination (Feature gate OFF) must be applied near-real-time | Base logic is reflected immediately (within a few minutes) for new requests after the termination trigger occurs |
+| NFR-004 | Availability | The reflection of promotion termination (common termination gate fires) must be applied near-real-time | Base logic is reflected immediately (within a few minutes) for new requests after the termination trigger occurs |
 | NFR-005 | Data Consistency | Feature 1's UID payback data is updated via a once-daily batch (KST 20:00), and the time gap between the withdrawal point and the batch point must be handled in a way that does not mislead the user | The reverse-calculation formula operates without error even when calculating with data from a period not yet reflected by the batch (falls back to base per the REQ-006 criteria in case of negative values or non-calculable cases) |
 | NFR-006 | Platform Compatibility | Features 1 and 2 must operate with identical logic on PC, MO, and App (webview); S3–S5 of Feature 3 apply only to Web (PC/MO) | The platform matrix in 화면변경목록_EN.md matches the actual implementation |
 | NFR-007 | Internationalization (Time Display) | The times used for batch and promotion determination (KST 20:00, D+30, etc.) are on a server-internal basis, and when related notice copy is displayed on screen, it must be **converted and displayed in the user's device's local time (device time zone)** | No fixed-KST copy is displayed; devices in different time zones each render their own local time (confirmed 2026-07-03) |
@@ -92,7 +92,7 @@
 | US-003 | A user who is already using WOOX Pro | I don't want to see unnecessary comparison nudges or pop-ups | I can use the service without being interrupted, since I've already made the optimal choice |
 | US-004 | A new or existing user of the TetherMax platform | I want to know that WOOX Pro is integrated with Bithumb via the Travel Rule | I can verify regulatory compliance for fund transfers and trust the service |
 | US-005 | A project PM / operations manager | I want to immediately terminate all 3 promotion features at once if a problem occurs | I can quickly roll back using only the existing event termination button, with no new development |
-| US-006 | A C-level decision maker | I want to compare the two display methods — Payback Rate basis and Total Saving basis | I can directly choose the more suitable method through a demo |
+| US-006 | A C-level decision maker | (decision complete) I want to finalize the display method | Finalized on a **Total Saving basis** after demo comparison (OI-08, 2026-07-03). The Payback Rate basis is discarded |
 
 ---
 
