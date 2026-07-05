@@ -1,3 +1,9 @@
+# AP-Framework 읽기 전용 템플릿 (스캐폴딩, 커밋 대상 아님)
+02.AP-Framework-V0.43/
+
+# 루트 원본 기획 소스 (00.통합자료실/고객자료로 이관본만 커밋)
+/wooxprosub.docx
+
 # 민감 정보 (절대 커밋하지 마세요)
 .AP-key.md
 .env

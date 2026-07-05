@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pandoc \"C:\\\\Users\\\\oem\\\\Desktop\\\\tethermax_project\\\\WOOX_Pro_sub\\\\wooxprosub.docx\" -o - --to markdown)"
+    ]
+  }
+}
