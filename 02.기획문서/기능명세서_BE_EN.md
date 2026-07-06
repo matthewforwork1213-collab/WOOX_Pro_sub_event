@@ -31,8 +31,8 @@ All features assume the common rules below. Each feature detail (§3) references
 
 | Feature | Behavior when `active=false` |
 |---|---|
-| F-001 (Virtual Feedback) | Returns `visible=false` → FE uses base event logic |
-| F-002 (Event Branch) | Returns the same base logic as `house_ad` |
+| F-001 (Virtual Feedback) | Returns `visible=false` → FE reverts to the original base event logic (show 1 randomly selected ongoing exchange event) |
+| F-002 (Event Branch) | Reverts to the original base logic (1 randomly selected ongoing exchange event) without promotion event branching. **This differs from `house_ad` (the tier-3 content while the promotion is active)** — on termination the revert target is the original base logic |
 | F-003 (Comparison Calculation) | Returns `visible=false` → Comparison Card not inserted |
 | F-004 (Banner Decision) | Returns `visible=false` → Banner not displayed |
 
@@ -168,6 +168,8 @@ actualFeePaid(E) = (Maker fee rate × (1 − Maker Discount Rate(E)) × Maker ra
 
 **Comparison/Savings Amount Derivation**: The same input values (balance·leverage·TIME·Maker/Taker ratio) are substituted into both WOOX Pro and the current exchange to obtain the net cost using each one's preview-specific Total Saving Rate (§2.2), and the difference is derived as the savings amount (USDT, 0.7 applied). `savingPercentPoint` is separately calculated as the **nominal** Total Saving Rate difference (§2.3, 0.7 not applied), so it is not simply proportional to `savingAmount`.
 
+- **The authoritative definition of `savingAmount` is the "net cost difference"** (formula above). When the compared exchange's **Discount Rate is 0 (the majority in this ecosystem)**, this value exactly equals `wooxProEstimate − currentExchangeEstimate` (the cashback estimate difference) — the API-003 example (Zoomex, Discount Rate 0) where `567 = 1512 − 945` is this case. When the compared exchange has a **Discount Rate > 0**, the net cost difference also includes the discount portion, so it diverges from the cashback difference. In that case the **net cost difference is authoritative**, and `wooxProEstimate − currentExchangeEstimate` is not used directly.
+
 - **Precondition (separate engineering track, not within this project's scope)**: There is a bug where the Admin "TetherMax Applied (%)" field stores the Discount Rate double-multiplied by the Payback Rate (cashbackRate). Feature 2 reads this field's Discount Rate as-is for calculation, so **this bug must be fixed before launch** for the numbers to be accurate (⚠️ OI-10). If not fixed, this API is not deployed to production.
 
 ---
@@ -197,7 +199,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 | Input | `uids` (to determine WOOX Pro inclusion), Admin-registered event list |
 | Processing (3-step priority) | 1) Check `active` via F-005 2) WOOX Pro's own event is registered active in the Admin → `eventType=woox_event` (**absolute priority**: WOOX Pro takes priority even if a concurrent withdrawal has another exchange's event) 3) If none, TetherMax WOOX Pro Onboarding Event active → `eventType=onboarding_event` 4) If neither, `eventType=house_ad`. Competitor exchange events are excluded from candidates (partnership protection) |
 | Output Fields | `case`="woox_pro_included", `eventType` (`woox_event`/`onboarding_event`/`house_ad`). Event details such as banner image·copy reuse existing event Admin data (separate lookup) |
-| Exception Handling | When `active=false`, returns base logic (treated the same as `house_ad`) |
+| Exception Handling | When `active=false`, reverts to the **original base logic (show 1 randomly selected ongoing exchange event)** without promotion event branching. `house_ad` is the tier-3 content while the promotion is active, so it is distinguished from the revert target (original base) on termination |
 | Related Screen | S1 (Withdrawal Completion Screen) |
 | Related API | GET /api/promo/withdrawal-feedback (API-002, Case B — same endpoint as F-001, branched by `case`) |
 | Requirements | REQ-005 |
@@ -213,7 +215,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 | Exception Handling | `exchange`=WOOX Pro not being called by FE is the default contract (REQ-010), but the server also defensively returns `visible=false`. `makerRatio+takerRatio≠100` or required field missing → 400. Nonexistent `exchange` → 404. Calculation failure → 500 (however, deployment prohibited if the OI-10 bug is not fixed) |
 | Related Screen | S2 (Cashback Preview Result Page) |
 | Related API | POST /api/promo/cashback-preview/compare (API-003) |
-| Requirements | REQ-008~011, 014, 015 |
+| Requirements | REQ-008~011, 014 (REQ-015 "multi-UID detail view" is an optional display feature of Feature 1 (multi-UID) and is out of scope for this comparison calculation, Could) |
 
 ### F-004. Travel Rule Banner Exposure Decision
 
@@ -247,7 +249,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 
 | Situation | Decision/Response | Result |
 |---|---|---|
-| Promotion inactive (`active=false`) | F-001/F-003 `visible=false`, F-002 `house_ad`, F-004 not displayed | base logic, 3 features together |
+| Promotion inactive (`active=false`) | F-001/F-003 `visible=false`, F-002 reverts to original base logic (1 randomly selected ongoing exchange event, not `house_ad`), F-004 not displayed | base logic, 3 features together |
 | Adverse case (other Total Saving Rate ≥ WOOX Pro) | 200 OK + `visible=false` | Not displayed (not an error) |
 | WOOX Pro unsupported (leverage/product, F-003) | 200 OK + `visible=false` | Comparison Card not inserted |
 | `exchange`=WOOX Pro (F-003) | 200 OK + `visible=false` (defensive) | FE does not call in the first place |
@@ -281,11 +283,14 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 |---|---|
 | REQ-001~004, 006, 007 | F-001, §2.4, §1.4·1.5 |
 | REQ-005 | F-002 |
-| REQ-008~011, 014, 015 | F-003, §2.5, §1.4 |
+| REQ-008~011, 014 | F-003, §2.5, §1.4 |
+| REQ-015 (multi-UID detail view, Could) | Feature 1 optional display (FE), out of this calculation scope |
 | REQ-016, 019 | F-004 |
 | REQ-020~023 | F-005, §1.1 |
 | REQ-024 (%p definition) | §2.3 |
 | REQ-025 (Total Saving display finalization) | §2.2·2.4·2.5 |
+| NFR-001 (response within 500ms) | F-001·F-003 calculation API performance target |
 | NFR-002 (internal figure non-disclosure) | §1.3 |
+| NFR-004 (near-real-time termination) | F-005, §1.1 (base reflected immediately for new requests — the gate query result is not cached long-term) |
 | NFR-005 (batch consistency) | F-001, §1.6 |
 | NFR-007 (time display) | §1.2 |

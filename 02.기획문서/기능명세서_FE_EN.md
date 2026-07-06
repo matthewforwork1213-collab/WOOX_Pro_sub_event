@@ -32,12 +32,14 @@ Each feature detail (§2) references this section rather than repeating it.
 
 | Feature | Fallback Behavior |
 |---|---|
-| F-001 (Virtual Feedback) | Card not shown → existing base event logic (Onboarding Event priority → general house ad) |
-| F-002 (Event Branching) | Render event component per response `eventType` (base ad when inactive) |
+| F-001 (Virtual Feedback) | Card not shown → **revert to the original base event logic (show 1 randomly selected ongoing exchange event)** |
+| F-002 (Event Branching) | **Revert to the original base event logic (show 1 randomly selected ongoing exchange event)** (no `eventType` branching when the promotion has ended) |
 | F-003 (Comparison Card) | Card not inserted → existing result screen only |
 | F-004 (Banner) | 5-location banners not shown |
 
 - **Safe default**: On status API failure, treated as `active=false` (inactive) — the existing service experience is not harmed even during an outage.
+
+> **Note — distinguish the two fallbacks.** The table above is the **revert to original base** when the promotion is **inactive (`active=false`: terminated/expired)**. In contrast, when the promotion is **active** but an individual request is ineligible (`visible=false`: adverse case/calculation impossible), F-001 takes the 3-tier fallback of **Onboarding Event → house ad** (§2 F-001 processing step 2, PRD §2-A-2). The Onboarding Event and house ad are **content available while the promotion is active**, so they are not shown once the promotion has ended.
 
 ### 1.2 Platform Scope Matrix
 
@@ -83,7 +85,7 @@ Each feature detail (§2) references this section rather than repeating it.
 |---|---|
 | Description | On the Withdrawal Completion Screen (S1), for withdrawals not including WOOX Pro, the existing ad area is replaced with a Virtual Feedback Card |
 | Input | Screen entry event (withdrawal completion), list of withdrawal UIDs (multiple possible) — no separate user input |
-| Processing | 1) On entry, request virtual feedback data from BE with the UID list 2) If `visible=true`, render the card; if `false`, fall back to base event logic (Onboarding Event priority when active, otherwise general house ad — 화면변경목록 A-2·A-3, PRD §2-A-3) 3) Render with the **Total Saving basis copy template** (OI-08 confirmed) 4) If `exchangeCount`≥2, render the aggregated total + "based on N exchanges" caption (no individual UID listing) |
+| Processing | 1) On entry, request virtual feedback data from BE with the UID list 2) If `visible=true`, render the card; if `false`, fall back to base event logic (Onboarding Event priority when active, otherwise general house ad — 화면변경목록 A-2·A-3, PRD §2-A-3) 3) Render with the **Total Saving basis copy template** (OI-08 confirmed) 4) The "standard user / base tier basis" caption is **always** shown (REQ-004·013). If `exchangeCount`≥2, render the aggregated total and add "based on N exchanges" to the caption (no individual UID listing); if `exchangeCount`=1, show the single amount + base caption |
 | Copy Template | Headline: "If you had used WOOX Pro for this withdrawal, you could have saved an additional **+{savingAmount} USDT ({savingPercentPoint}%p)** in fees" · Sub: "Fee differences add up to a larger amount than you'd think" · CTA link: "View WOOX Pro Fee Comparison >" |
 | Output (UI) | Virtual Feedback Card (headline, savings amount USDT, %p, sub copy, CTA button, "standard user / base tier basis" caption) |
 | Exception Handling | `visible=false` (counter-effect·calculation impossible·0 or below) → card not shown, replaced with base logic. API failure/timeout → base event logic fallback (Virtual Feedback not shown). When displaying a time such as a batch time-lag notice, convert UTC→local (§1.3) |
@@ -130,7 +132,7 @@ Each feature detail (§2) references this section rather than repeating it.
 | 5 Locations | #1 Below Cashback Preview Result (S2) · #2 Outside below Withdrawal Result Card (S1) · #3 Below MO pre-login button (S4) · #4 Top of PC Login Page (S3) · #5 Below Member ID on My Page (S5) |
 | Exception Handling | When promotion is inactive, all 5 locations are not shown. In the App environment, only S1·S2 are rendered; S3~S5 are native and thus excluded from rendering targets (§1.2) |
 | Related Screens | S1·S2 — PC·MO·App / S3·S4·S5 — Web (PC/MO) only |
-| Related API | GET /api/promo/status (API-001, uses `active` only) |
+| Related API | GET /api/promo/status (API-001, uses `active` + `travelRuleBanner.i18nKey`) |
 | Requirements | REQ-016~019 |
 
 ### F-005. Promotion Active State Reflection (Screen Branching)
@@ -170,6 +172,7 @@ Each feature detail (§2) references this section rather than repeating it.
 | Status API (F-005) failure | Treated as `active=false`, nudges·banners not shown |
 | F-001 `visible=false` | Card not shown → Onboarding Event → house ad fallback |
 | F-001/F-002 API failure·500 | Existing base event logic fallback |
+| F-001 400 (`uids` format error) | base event logic fallback (rare — `uids` is a system-provided value) |
 | F-003 `visible=false` | Comparison card not inserted, result screen only |
 | F-003 exchange=WOOX Pro | API not called, no comparison card |
 | F-003 400/404 | After input validation, comparison card not inserted (result screen maintained) |
@@ -184,7 +187,8 @@ Each feature detail (§2) references this section rather than repeating it.
 |---|---|
 | REQ-001~004, 006, 007 | F-001 |
 | REQ-005 | F-002 |
-| REQ-008~015 | F-003 (collapse=REQ-012, caption=REQ-013, CTA=REQ-014) |
+| REQ-008~014 | F-003 (collapse=REQ-012, caption=REQ-013, CTA=REQ-014) |
+| REQ-015 (multi-UID detail view, Could·may be unimplemented) | Feature 1 (multi-UID) optional display. Expand option for per-UID breakdown from F-001's aggregated total (REQ-004 total retained even if unimplemented) |
 | REQ-016~019 | F-004 |
 | REQ-020~022 | F-005, §1.1 |
 | REQ-023 (internal figures not shown) | §1.4 |
