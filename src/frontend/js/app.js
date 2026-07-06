@@ -387,68 +387,101 @@
   function markErr(id) { var e = document.getElementById(id); if (e) { e.classList.add('err'); e.addEventListener('input', function () { e.classList.remove('err'); }, { once: true }); } }
 
   // ======================================================================
-  // 마이페이지 (로그인 후, 다크) — 배너 #5
+  // 모바일 · 로그인 전 메뉴 (S4) — 배너 #3
+  // ======================================================================
+  function renderMweb() {
+    var b = phoneOpen(true) +
+      '<div class="mweb">' +
+      '<div class="close" data-action="mp-close">✕</div>' +
+      '<div class="welcome-card">' +
+      '<div class="wt">Welcome to TetherMax!</div>' +
+      '<div class="ws">Create an account or log in to start earning Cashback.</div>' +
+      '<div class="btn-row" style="margin-top:14px">' +
+      '<button class="btn btn-ghost dark" data-action="go-login">Log In</button>' +
+      '<button class="btn btn-primary" data-action="go-signup">Sign Up</button></div>' +
+      // 배너 #3 (Log In/Sign Up 버튼 바로 아래). 프로모션 종료 시 자동 미노출.
+      banner(3) +
+      '</div>' +
+      '<div class="m-card">' +
+      menuRow('⇅', 'Exchanges') + menuRow('▤', 'Events') + menuRow('✦', 'Benefits') +
+      menuRow('▦', 'Cashback Preview') + menuRow('◈', 'Point') +
+      '</div>' +
+      '<div class="m-card">' +
+      '<div class="m-row">🎨 <span>Theme</span><span class="spacer"></span><span class="switch on"><span class="knob"></span></span></div>' +
+      '<div class="m-row">🌐 <span>Language</span><span class="spacer"></span><span class="val">English</span></div>' +
+      '</div>' +
+      '<div class="m-card">' + menuRow('ⓘ', 'Terms of Use') + menuRow('▤', 'Privacy Policy') + '</div>' +
+      '<div class="m-card">' + menuRow('∞', 'About TetherMax') + menuRow('📢', 'Notices') + '</div>' +
+      '<div class="headset">🎧</div>' +
+      '</div>' + phoneClose();
+    mountRaw(b);
+    onClick('[data-action="go-login"]', function () { go('login'); });
+    onClick('[data-action="go-signup"]', function () { go('signup'); });
+    onClick('[data-action="mp-close"]', function () { go('s1'); });
+  }
+  function menuRow(ic, lb) { return '<div class="m-row"><span class="ic">' + ic + '</span><span>' + lb + '</span></div>'; }
+
+  // ======================================================================
+  // 마이페이지 (S5) — 데스크톱 대시보드 + 우측 프로필 드로어, 배너 #5(회원 ID 하단)
   // ======================================================================
   function renderMypage() {
-    if (!state.auth.loggedIn) {
-      // 비로그인 → mWeb 로그인 전 랜딩 메뉴 (S4). 배너 #3 = Log In/Sign Up 버튼 바로 아래.
-      var b = phoneOpen(true) +
-        '<div class="mweb">' +
-        '<div class="close" data-action="mp-close">✕</div>' +
-        '<div class="welcome-card">' +
-        '<div class="wt">Welcome to TetherMax!</div>' +
-        '<div class="ws">Create an account or log in to start earning Cashback.</div>' +
-        '<div class="btn-row" style="margin-top:14px">' +
-        '<button class="btn btn-ghost dark" data-action="go-login">Log In</button>' +
-        '<button class="btn btn-primary" data-action="go-signup">Sign Up</button></div>' +
-        // 배너 #3 (붉은 박스: 버튼 바로 아래). 프로모션 종료 시 자동 미노출.
-        banner(3) +
-        '</div>' +
-        '<div class="m-card">' +
-        menuRow('⇅', 'Exchanges') + menuRow('▤', 'Events') + menuRow('✦', 'Benefits') +
-        menuRow('▦', 'Cashback Preview') + menuRow('◈', 'Point') +
-        '</div>' +
-        '<div class="m-card">' +
-        '<div class="m-row">🎨 <span>Theme</span><span class="spacer"></span><span class="switch on"><span class="knob"></span></span></div>' +
-        '<div class="m-row">🌐 <span>Language</span><span class="spacer"></span><span class="val">English</span></div>' +
-        '</div>' +
-        '<div class="m-card">' + menuRow('ⓘ', 'Terms of Use') + menuRow('▤', 'Privacy Policy') + '</div>' +
-        '<div class="m-card">' + menuRow('∞', 'About TetherMax') + menuRow('📢', 'Notices') + '</div>' +
-        '<div class="headset">🎧</div>' +
-        '</div>' + phoneClose();
-      mountRaw(b);
-      onClick('[data-action="go-login"]', function () { go('login'); });
-      onClick('[data-action="go-signup"]', function () { go('signup'); });
-      onClick('[data-action="mp-close"]', function () { go('s1'); });
-      return;
-    }
-    var body = phoneOpen(true) +
-      '<div class="mypage">' +
-      '<div class="close" data-action="mp-close">✕</div>' +
-      '<div class="avatar">🐯</div>' +
-      '<div class="email">abc****@live.com</div>' +
-      '<div class="mid">Member ID: 10047039 ⧉</div>' +
-      // 배너 #5 (회원 ID 하단)
-      banner(5) +
-      '<div class="grid">' +
-      mpCell('◪', 'Cashback Summary') + mpCell('✉', 'Invite Friends') +
-      mpCell('▥', 'Cashback Ranking') + mpCell('★', 'My Coupons') +
+    var body = '<div class="desktop mypage-desktop">' + siteNav() +
+      // 배경 대시보드 (딤 처리됨)
+      '<div class="dash">' +
+      '<div>' +
+      '<div class="bal-card"><span class="coins">🪙</span><div style="flex:1"><div class="b-amt">5,000.50 USDT</div><div class="b-k">Total Cashback Balance</div></div>' +
+      '<button class="btn btn-primary" style="width:auto;padding:9px 16px">Withdraw</button></div>' +
+      '<div class="uid-card"><div class="u-head"><b>Linked UID</b><span class="link">See All</span></div>' +
+      '<div class="u-row"><span class="exlogo" style="background:' + EX.bitget.color + '">B</span><b>Bitget</b><span class="spacer"></span><b>5,000.50 USDT</b></div>' +
+      '<div class="u-sub">● UID 685432171</div>' +
+      '<div class="u-more">⊕ Using multiple exchanges? Link more UIDs</div></div>' +
       '</div>' +
-      '<div class="list">' +
+      '<div>' +
+      '<div class="sect-title">Exclusive For Members</div>' +
+      '<div class="ev-grid">' +
+      evCard('Predict Bitcoin price and win up to 1,000.00 USDT', '🔮', 'Rewards', 'Up to 1,000.00 USDT', '<span class="ev-badge">Ongoing</span>') +
+      evCard('Earn More Cashback. Earn Extra USDT', '💰', 'Rewards', 'Up to 500.00 USDT', '<span class="ev-badge">Ongoing</span>') +
+      '</div>' +
+      '<div class="sect-title" style="margin-top:22px">Limited Time Offers</div>' +
+      '<div class="ev-grid">' +
+      evCard('Trade to win up to $100K prize pool', '🏆', 'Rewards', '$100,000.00', '<span class="ev-badge count">⏱ Ends in 45 M 37 S</span>', true) +
+      evCard('Trade to win up to $100K prize pool', '🏆', 'Rewards', '$100,000.00', '<span class="ev-badge count">⏱ Ends in 45 M 37 S</span>', true) +
+      '</div>' +
+      '</div></div>' +
+      // 딤 + 우측 프로필 드로어
+      '<div class="pm-dim" data-action="mp-dim"></div>' +
+      '<div class="pm-drawer">' +
+      '<div class="pm-close" data-action="mp-dim">✕</div>' +
+      '<div class="pm-avatar">🐯</div>' +
+      '<div class="pm-email">abc****@live.com</div>' +
+      '<div class="pm-mid">Member ID: 10047039 ⧉</div>' +
+      // 배너 #5 (회원 ID 바로 아래)
+      banner(5) +
+      '<div class="pm-grid">' +
+      pmCell('◪', 'Cashback Summary') + pmCell('✉', 'Invite Friends') +
+      pmCell('▥', 'Cashback Ranking') + pmCell('★', 'My Coupons') +
+      '</div>' +
+      '<div class="pm-list">' +
       '<div class="row">🛡 &nbsp; Account Security</div>' +
-      '<div class="row">🔔 &nbsp; Notification settings</div></div>' +
-      '<div class="list"><div class="row" data-action="logout">⇥ &nbsp; Log Out</div></div>' +
-      '</div>' + phoneClose();
-    mountRaw(body);
-    onClick('[data-action="mp-close"]', function () { go('s1'); });
+      '<div class="row">🔔 &nbsp; Notification Settings</div></div>' +
+      '<div class="pm-list"><div class="row" data-action="logout">⇥ &nbsp; Log Out</div></div>' +
+      '</div></div>';
+    mountDesktop(body);
+    onClick('[data-action="mp-dim"]', function () { toast('드로어를 닫았습니다 (프로토타입 · 마이페이지 유지)'); });
     onClick('[data-action="logout"]', function () {
       modal('<div class="modal-title">Log out?</div><div class="modal-sub">You can log back in anytime.</div><div class="sp16"></div><div class="btn-row"><button class="btn btn-ghost" data-action="lo-cancel">Cancel</button><button class="btn btn-primary" data-action="lo-ok">Log Out</button></div>', { center: true });
       onClick('[data-action="lo-cancel"]', closeModal);
       onClick('[data-action="lo-ok"]', function () { closeModal(); state.auth.loggedIn = false; toast('로그아웃'); go('login'); });
     });
   }
-  function mpCell(ic, lb) { return '<div class="cell"><span class="ic">' + ic + '</span><span class="lb">' + lb + '</span></div>'; }
-  function menuRow(ic, lb) { return '<div class="m-row"><span class="ic">' + ic + '</span><span>' + lb + '</span></div>'; }
+  function pmCell(ic, lb) { return '<div class="pm-cell"><span class="ic">' + ic + '</span><span class="lb">' + lb + '</span></div>'; }
+  function evCard(title, emoji, rk, rv, badge, dark2) {
+    return '<div class="ev-card"><div class="ev-img ' + (dark2 ? 'dark2' : '') + '">' +
+      '<span class="ev-tag"><span class="exlogo" style="background:' + EX.bitget.color + '">B</span>Bitget</span>' +
+      '<div class="ev-t">' + title + '</div><div class="ev-emoji">' + emoji + '</div></div>' +
+      '<div class="ev-foot"><div class="ev-rw"><span>🎁 ' + rk + '</span><b>' + rv + '</b></div>' + badge +
+      '<button class="btn btn-primary ev-join">Join Now</button></div></div>';
+  }
 
   // ---------------- WOOX Pro 상세(=CTA 목적지, OI-06) ----------------
   function openWooxDetail() {
@@ -489,6 +522,7 @@
       case 's2': renderS2(); break;
       case 'login': renderLogin(); break;
       case 'signup': renderSignup(); break;
+      case 'mweb': renderMweb(); break;
       case 'mypage': renderMypage(); break;
     }
     renderDrawer();
@@ -534,7 +568,7 @@
     h += '<div class="d-sec"><div class="lbl">인증 상태</div>';
     h += '<div class="hint">로그인: <b>' + (state.auth.loggedIn ? '됨' : '안됨') + '</b> · 로그인 화면에서 wrong@test.com / wrong 입력 시 자격 에러 재현</div></div>';
 
-    h += '<div class="d-sec"><div class="hint">배너 5위치: #1 S2하단 · #2 S1 · #3 마이페이지(로그아웃) Log In/Sign Up 아래 · #4 PC로그인상단 · #5 마이페이지(로그인) 회원ID하단. 프로모션 종료 시 전부 미노출.</div></div>';
+    h += '<div class="d-sec"><div class="hint">배너 5위치: #1 S2하단 · #2 S1 · #3 모바일-로그인전(Log In/Sign Up 아래) · #4 PC로그인상단 · #5 마이페이지 회원ID하단. 프로모션 종료 시 전부 미노출.</div></div>';
 
     d.innerHTML = h;
 
