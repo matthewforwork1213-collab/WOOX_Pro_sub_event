@@ -114,6 +114,19 @@ Display %p = nominal Total Saving Rate(WOOX Pro) − nominal Total Saving Rate(c
 - Since it is the same Total Saving Rate metric as the adverse-case decision (§1.4), the decision criterion and the displayed %p are always consistent.
 - It may look identical to the Payback Rate difference, but **when the comparison target is an exchange that has a Discount Rate, the value differs**, so the precise definition is the "Total Saving Rate difference."
 
+**Single %p when aggregating multiple UIDs (base-fee weighted average, confirmed 2026-07-06)**
+
+When Feature 1 aggregates multiple exchange UIDs, the single %p is derived as the **base-fee weighted average** below (no simple sum, no arithmetic mean). The aggregation set is the same as `savingAmount` (adverse-case-free & positive-savings UIDs).
+```
+Current effective Total Saving Rate = Σ(base fee_i × current_i nominal Total Saving Rate) ÷ Σ(base fee_i)
+Multi-UID %p = nominal Total Saving Rate(WOOX Pro, 80%) − Current effective Total Saving Rate
+
+  ⇔ (equivalent identity)  Multi-UID %p = total additional savings ÷ Σ(base fee_i)
+```
+- Since WOOX Pro's net cost per UID is `base fee × 0.2`, WOOX Pro's effective Total Saving Rate is always 80%; thus the two formulas are identical.
+- For a single UID (N=1), this reduces exactly to the §2.3 base definition.
+- The %p calculation uses the actual aggregated values **before** the 1 USDT display-floor correction (total additional savings·Σ base fee).
+
 ### 2.4 Feature 1 — Base Fee Reverse-Calculation and Savings Amount
 
 On the Withdrawal Completion Screen, only the user's **actual payback amount** exists. The exchange's original fee rate is unnecessary and is reverse-calculated as below.
@@ -184,8 +197,8 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 |---|---|
 | Description | Receives a list of withdrawal UIDs, reverse-calculates the actual payback amount (§2.4), and derives the WOOX Pro Virtual Feedback savings amount |
 | Input | `uids` (list of withdrawal UIDs, comma-separated, multiple possible), user identifier (session) |
-| Processing | 1) Pre-check `active` via F-005 — if false, immediately `visible=false` (§1.1) 2) For each UID, look up the actual payback amount from the user UID table (KST 20:00 batch data, §1.6) 3) For each UID, compute **base fee reverse-calculation → additional savings** using the exchange's Discount Rate·Payback Rate (§2.4) 4) Per-UID adverse-case decision: if another exchange's nominal Total Saving Rate ≥ WOOX Pro (80%), mark that UID as adverse-case and exclude it from the sum (§1.4) 5) Sum only the UIDs that are non-adverse & have a positive savings amount into a **single total** 6) If the sum is less than 1 USDT, correct to 1; if 0 or less, `visible=false` (§1.5) |
-| Output Fields | `case`="non_woox_pro", `visible` (bool), `savingAmount` (USDT, Total Saving basis, value after <1 correction), `savingPercentPoint` (nominal %p, §2.3), `exchangeCount` (number of UIDs included in the sum, for the "based on N exchanges" caption) |
+| Processing | 1) Pre-check `active` via F-005 — if false, immediately `visible=false` (§1.1) 2) For each UID, look up the actual payback amount from the user UID table (KST 20:00 batch data, §1.6) 3) For each UID, compute **base fee reverse-calculation → additional savings** using the exchange's Discount Rate·Payback Rate (§2.4) 4) Per-UID adverse-case decision: if another exchange's nominal Total Saving Rate ≥ WOOX Pro (80%), mark that UID as adverse-case and exclude it from the sum (§1.4) 5) Sum only the UIDs that are non-adverse & have a positive savings amount into a **single total** 6) If the sum is less than 1 USDT, correct to 1; if 0 or less, `visible=false` (§1.5) 7) For multiple UIDs, unify `savingPercentPoint` via the **base-fee weighted average** (§2.3; no simple sum, no arithmetic mean) |
+| Output Fields | `case`="non_woox_pro", `visible` (bool), `savingAmount` (USDT, Total Saving basis, value after <1 correction), `savingPercentPoint` (nominal %p — for multiple UIDs, §2.3 base-fee weighted average), `exchangeCount` (number of UIDs included in the sum, for the "based on N exchanges" caption) |
 | Exception Handling | No batch payback data for a specific UID → exclude only that UID from calculation (not an error). Calculation impossible for all UIDs → `visible=false`. Calculation failure (500) → FE base fallback. The batch-lag notice time is returned in UTC, and the FE converts to local (§1.2) |
 | Related Screen | S1 (Withdrawal Completion Screen) |
 | Related API | GET /api/promo/withdrawal-feedback (API-002, Case A) |
