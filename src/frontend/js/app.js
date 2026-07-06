@@ -321,7 +321,6 @@
   function renderSignup() {
     var body = '<div class="desktop">' + siteNav() +
       '<div style="padding:40px 20px">' +
-      banner(3) + // 배너 #3 데모(로그인 전)
       '<div class="h1">Create Account</div>' +
       '<div class="center muted">We\'ll send you a code to verify this email</div><div class="sp16"></div>' +
       '<div class="form">' +
@@ -392,11 +391,35 @@
   // ======================================================================
   function renderMypage() {
     if (!state.auth.loggedIn) {
-      // 비로그인 접근 → 로그인 유도
-      var b = phoneOpen(true) + '<div class="mypage"><div class="close" data-action="mp-close">✕</div>' +
-        '<div class="sp24"></div><div class="center" style="color:#cbd5e1">로그인이 필요합니다.</div><div class="sp16"></div>' +
-        '<button class="btn btn-primary" data-action="go-login">로그인하러 가기</button></div>' + phoneClose();
-      mountRaw(b); onClick('[data-action="go-login"]', function () { go('login'); }); onClick('[data-action="mp-close"]', function () { go('s1'); });
+      // 비로그인 → mWeb 로그인 전 랜딩 메뉴 (S4). 배너 #3 = Log In/Sign Up 버튼 바로 아래.
+      var b = phoneOpen(true) +
+        '<div class="mweb">' +
+        '<div class="close" data-action="mp-close">✕</div>' +
+        '<div class="welcome-card">' +
+        '<div class="wt">Welcome to TetherMax!</div>' +
+        '<div class="ws">Create an account or log in to start earning Cashback.</div>' +
+        '<div class="btn-row" style="margin-top:14px">' +
+        '<button class="btn btn-ghost dark" data-action="go-login">Log In</button>' +
+        '<button class="btn btn-primary" data-action="go-signup">Sign Up</button></div>' +
+        // 배너 #3 (붉은 박스: 버튼 바로 아래). 프로모션 종료 시 자동 미노출.
+        banner(3) +
+        '</div>' +
+        '<div class="m-card">' +
+        menuRow('⇅', 'Exchanges') + menuRow('▤', 'Events') + menuRow('✦', 'Benefits') +
+        menuRow('▦', 'Cashback Preview') + menuRow('◈', 'Point') +
+        '</div>' +
+        '<div class="m-card">' +
+        '<div class="m-row">🎨 <span>Theme</span><span class="spacer"></span><span class="switch on"><span class="knob"></span></span></div>' +
+        '<div class="m-row">🌐 <span>Language</span><span class="spacer"></span><span class="val">English</span></div>' +
+        '</div>' +
+        '<div class="m-card">' + menuRow('ⓘ', 'Terms of Use') + menuRow('▤', 'Privacy Policy') + '</div>' +
+        '<div class="m-card">' + menuRow('∞', 'About TetherMax') + menuRow('📢', 'Notices') + '</div>' +
+        '<div class="headset">🎧</div>' +
+        '</div>' + phoneClose();
+      mountRaw(b);
+      onClick('[data-action="go-login"]', function () { go('login'); });
+      onClick('[data-action="go-signup"]', function () { go('signup'); });
+      onClick('[data-action="mp-close"]', function () { go('s1'); });
       return;
     }
     var body = phoneOpen(true) +
@@ -425,6 +448,7 @@
     });
   }
   function mpCell(ic, lb) { return '<div class="cell"><span class="ic">' + ic + '</span><span class="lb">' + lb + '</span></div>'; }
+  function menuRow(ic, lb) { return '<div class="m-row"><span class="ic">' + ic + '</span><span>' + lb + '</span></div>'; }
 
   // ---------------- WOOX Pro 상세(=CTA 목적지, OI-06) ----------------
   function openWooxDetail() {
@@ -510,7 +534,7 @@
     h += '<div class="d-sec"><div class="lbl">인증 상태</div>';
     h += '<div class="hint">로그인: <b>' + (state.auth.loggedIn ? '됨' : '안됨') + '</b> · 로그인 화면에서 wrong@test.com / wrong 입력 시 자격 에러 재현</div></div>';
 
-    h += '<div class="d-sec"><div class="hint">배너 5위치: #1 S2하단 · #2 S1 · #3 로그인전(회원가입) · #4 PC로그인상단 · #5 마이페이지. 프로모션 종료 시 전부 미노출.</div></div>';
+    h += '<div class="d-sec"><div class="hint">배너 5위치: #1 S2하단 · #2 S1 · #3 마이페이지(로그아웃) Log In/Sign Up 아래 · #4 PC로그인상단 · #5 마이페이지(로그인) 회원ID하단. 프로모션 종료 시 전부 미노출.</div></div>';
 
     d.innerHTML = h;
 
