@@ -15,7 +15,7 @@
 |------|------|
 | **Purpose** | For 30 days immediately following the new onboarding of the WOOX Pro exchange, leverage traffic and UI Nudges within the TetherMax platform to maximize the user conversion rate and sign-up rate to WOOX Pro |
 | **Core Strategy** | Presenting comparative figures that stimulate the user's **'Loss Aversion'** bias, combined with well-timed UI Nudges (post-withdrawal Virtual Feedback + inline comparison card on the result page) |
-| **Promotion Period** | ⚠️ **Policy change 2026-07-07**: D+30 auto-termination abolished → visibility is fully controlled by **per-area backoffice on/off**. Conflicts with the prior "launch + 30 days only, not made permanent" (OI-07) — **awaiting C-level re-approval** |
+| **Promotion Period** | **2026-07-07 C-level decision**: the **period is controlled by admin (backoffice)** (D+30 auto-termination abolished, per-area on/off). Updates the prior "launch + 30 days only, not made permanent" (OI-07) |
 
 ---
 
@@ -303,7 +303,7 @@ The WOOX Pro Comparison Card is not inserted, and only the normal payback result
 
 ### 3-3. Visibility Control — Per-Area Backoffice On/Off (policy change 2026-07-07)
 
-> ⚠️ **Policy change (2026-07-07)**: The previous "D+30 auto-termination + 2 WOOX Pro event termination buttons (OR) + collective rollback of all 3 features" gate is **fully abolished**, and visibility is controlled via **per-area on/off on a new backoffice page**. **Abolishing D+30 auto-termination conflicts with OI-07 (C-level: launch + 30 days only, not made permanent)** (permanent display becomes possible) and with the project name ("30-Day Intensive Promotion"), so **C-level re-approval is required**.
+> ⚠️ **Policy change (2026-07-07)**: The previous "D+30 auto-termination + 2 WOOX Pro event termination buttons (OR) + collective rollback of all 3 features" gate is **fully abolished**, and visibility is controlled via **per-area on/off on a new backoffice page**. **The period is also controlled by admin (backoffice)** (2026-07-07 C-level decision, OI-07 updated — supersedes "launch + 30 days only, not made permanent"). The "30 days" in the project name is interpreted as an admin-controlled period, not a system-enforced termination.
 
 **New control — 5 backoffice on/off (per-area, independent, partial control allowed):**
 
@@ -380,7 +380,7 @@ The WOOX Pro Comparison Card is not inserted, and only the normal payback result
 - [x] Adverse-case prevention determination criterion → **Total Saving Rate**. Not displayed if another exchange's Total Saving ≥ WOOX Pro's (displayed only when WOOX Pro is strictly greater) (§3-1)
 - [x] Simultaneous withdrawal across multiple exchanges (UIDs) → sum only UIDs that are not adverse cases and are positive, **displayed as a single total amount** (multiple UIDs also not listed), "based on N exchanges" caption
 - [x] Definition of "TetherMax-type event" → TetherMax WOOX Pro Onboarding Event
-- [x] Visibility control → **5 per-area backoffice on/off** (partial control allowed). The prior "2 WOOX event OR + D+30 collective rollback" is abolished (§3-3, 2026-07-07). ⚠️ Abolishing D+30 conflicts with OI-07 — awaiting C-level re-approval
+- [x] Visibility control → **5 per-area backoffice on/off** (partial control allowed). The prior "2 WOOX event OR + D+30 collective rollback" is abolished (§3-3, 2026-07-07). period is also admin-controlled (C-level decision, OI-07 updated, 2026-07-07)
 - [x] Feature 3 Travel Rule banner → 5 positions, logo = hardcoded image (⇄ between logos) · copy = translated text, **navigates to WOOX Pro detail on click** (Feature 3 revised 2026-07-07, ⚠️ OI-09 legal re-confirmation), visibility via backoffice on/off
 - [x] Banner copy → KO "트레블룰 연동" / EN "Travel Rule Integration" (standard localization for other languages)
 - [x] Promotion start date → **the point of WOOX Pro exchange onboarding** (globally fixed date)

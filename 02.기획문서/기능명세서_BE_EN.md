@@ -27,7 +27,7 @@ All features assume the common rules below. Each feature detail (§3) references
 
 ### 1.1 Visibility Control — Per-Area Backoffice On/Off (2026-07-07 policy)
 
-> **Policy change (2026-07-07)**: The previous common gate "D+30 AND both WOOX Pro events not terminated" is **abolished**, and each display area is **controlled independently via backoffice on/off**. ⚠️ Abolishing D+30 conflicts with OI-07 (C-level: launch + 30 days only, not made permanent) — C-level re-approval required. Permanent display becomes possible.
+> **Policy change (2026-07-07)**: The previous common gate "D+30 AND both WOOX Pro events not terminated" is **abolished**, and each display area is **controlled independently via backoffice on/off**. The promotion period is also admin-controlled — per C-level decision, OI-07 updated (supersedes the prior 30-day/no-permanent stance), confirmed 2026-07-07.
 
 - Each area is shown **only when its corresponding backoffice flag is ON** (F-005 provides 5 flags). Partial control allowed (per-area independent).
 

@@ -27,7 +27,7 @@ Each feature detail (§2) references this section rather than repeating it.
 
 ### 1.1 Visibility Control — Per-Area Backoffice On/Off (2026-07-07 policy)
 
-> **Policy change (2026-07-07)**: The previous "D+30 + 2 WOOX Pro events" common gate is abolished → visibility is controlled via **per-area backoffice on/off**. F-005 provides 5 flags. ⚠️ Abolishing D+30 conflicts with OI-07 — awaiting C-level re-approval.
+> **Policy change (2026-07-07)**: The previous "D+30 + 2 WOOX Pro events" common gate is abolished → visibility is controlled via **per-area backoffice on/off**. F-005 provides 5 flags. The promotion period is also admin-controlled (C-level decision, OI-07 updated, 2026-07-07).
 
 - Each area falls back as below when its corresponding backoffice flag is **OFF** (per-area independent).
 
