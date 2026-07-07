@@ -13,11 +13,19 @@
   var state = {
     screen: 's1',
     prevScreen: 's1',
-    env: { withinD30: true, event1Terminated: false, event2Terminated: false, simulateStatusError: false },
     s1: { mode: 'feedback', dismissed: false },
     s2: { exchange: 'bitget', mode: 'comparison', collapsed: false, oi10: false },
     auth: { loggedIn: false },
   };
+
+  // 백오피스 노출 제어(2026-07-07 정책): 영역별 on/off. localStorage 공유(백오피스 페이지와 동일 키).
+  var ADMIN_KEY = 'wooxpromo_admin';
+  var ADMIN_DEF = { s1Feedback: true, s1Banner: true, s2Compare: true, s2Banner: true, loginBanners: true };
+  function admin() {
+    try { return Object.assign({}, ADMIN_DEF, JSON.parse(localStorage.getItem(ADMIN_KEY)) || {}); }
+    catch (e) { return Object.assign({}, ADMIN_DEF); }
+  }
+  function setAdmin(k, v) { var a = admin(); a[k] = v; try { localStorage.setItem(ADMIN_KEY, JSON.stringify(a)); } catch (e) { } }
 
   var S1_MODES = [
     { k: 'feedback', t: '가상 피드백(단일)', req: 'REQ-001~003' },
@@ -64,13 +72,19 @@
   }
   function closeModal() { document.getElementById('modal-root').innerHTML = ''; }
 
-  function status() { return API.getStatus(state.env).data; }
+  // 배너 위치별 노출 여부(백오피스 on/off). #1=S2, #2=S1, #3·#4·#5=로그인 3페이지 일괄
+  function bannerAllowed(pos) {
+    var a = admin();
+    if (pos === 1) return a.s2Banner;
+    if (pos === 2) return a.s1Banner;
+    return a.loginBanners; // #3·#4·#5
+  }
 
   // ---------------- 트레블룰 배너 (기능 3) ----------------
-  // 개정: 클릭 시 WOOX Pro 거래소 상세로 이동(기존 정적·클릭없음에서 변경). 로고 사이 좌우 화살표(⇄).
+  // 개정: 클릭 시 WOOX Pro 거래소 상세로 이동. 로고 사이 좌우 화살표(↔). 노출은 백오피스 on/off.
   // variant: '' 기본 pill | 'block' 별도 블록(모바일 로그인 전) | 'left' 좌측정렬 풀폭(마이페이지)
   function banner(pos, variant) {
-    if (!status().active) return '';
+    if (!bannerAllowed(pos)) return '';
     var cls = variant ? ' ' + variant : '';
     var wrapFull = (variant === 'block' || variant === 'left') ? ' full' : '';
     return '<div class="tr-wrap' + wrapFull + '"><div class="tr-banner' + cls + '" data-action="tr-click" title="WOOX Pro 거래소 상세로 이동 (배너 #' + pos + ')">' +
@@ -91,7 +105,7 @@
   function renderS1() {
     var m = state.s1.mode;
     var body = '';
-    var active = status().active;
+    var feedbackOn = admin().s1Feedback; // 백오피스: WOOX Pro 가상 피드백 안내 on/off
 
     body += '<div class="appbar"><div class="brand"><span class="inf">∞</span> TetherMax</div><div class="icons">◍ ≡</div></div>';
     body += '<div class="screen-pad">';
@@ -99,11 +113,11 @@
       '<div class="h1" style="margin-top:0">' + T('Withdrawal Complete') + '</div>' +
       '<div class="muted">1,000 USDT · Bitget</div></div><div class="sp16"></div>';
 
-    if (!active) {
-      body += sectionLabel('프로모션 종료 → 원 base 이벤트(진행 중 거래소 이벤트 임의 1개)');
+    if ((m === 'feedback' || m === 'multi') && !feedbackOn) {
+      body += sectionLabel('백오피스 OFF: WOOX Pro 가상 피드백 안내 미표시 → base');
       body += eventAd('base');
     } else if (m === 'feedback' || m === 'multi') {
-      var res = API.withdrawalFeedback(state.env, {
+      var res = API.withdrawalFeedback({
         wooxIncluded: false,
         uids: m === 'multi'
           ? [{ exchange: 'bitget', actualPayback: 54 }, { exchange: 'zoomex', actualPayback: 36 }]
@@ -115,7 +129,7 @@
       body += sectionLabel('역효과(타 거래소 토탈세이빙 ≥ WOOX) → 미노출, base 폴백');
       body += eventAd('base');
     } else if (m === 'woox_event' || m === 'onboarding_event' || m === 'house_ad') {
-      var r3 = API.withdrawalFeedback(state.env, { wooxIncluded: true, eventTier: m });
+      var r3 = API.withdrawalFeedback({ wooxIncluded: true, eventTier: m });
       body += sectionLabel('WOOX Pro 포함 → 이벤트 분기: ' + m);
       body += eventAd(r3.data.eventType);
     } else if (m === 'error') {
@@ -208,20 +222,24 @@
 
     if (s.oi10) body += '<div class="inline-warn">⚠︎ [개발용] 어드민 "테더맥스 적용" 이중곱 버그(OI-10) 미수정 상태 — 비교 숫자 정확도 미보장. 런칭 전 선행 수정 필요.</div>';
 
-    var cmp = API.cashbackCompare(state.env, {
-      exchange: exKey, balance: params.balance, leverage: params.leverage,
-      makerRatio: params.makerRatio, takerRatio: params.takerRatio,
-      dailyTradeFrequency: params.freq, forceError: s.mode === 'err500', unsupported: s.mode === 'unsupported'
-    });
-
-    if (cmp.status === 'error') {
-      body += '<div class="tag-note">비교 카드 미삽입 (에러 ' + cmp.httpStatus + ')</div>';
-      setTimeout(function () { toast('[' + cmp.httpStatus + ' ' + cmp.code + '] ' + (cmp.message || ''), 'err'); }, 60);
-    } else if (cmp.data.visible) {
-      body += compareCard(exView, cmp.data);
+    if (!admin().s2Compare) {
+      // 백오피스 OFF: WOOX Pro 비교 안내 미표시
+      body += '<div class="tag-note">백오피스 OFF: WOOX Pro 비교 안내 미표시 → 결과 화면만</div>';
     } else {
-      var reasonMap = { adverse: '역효과(현재 거래소가 유리) → 비교 카드 미노출', unsupported: 'WOOX Pro 미지원 조건 → 미노출', woox_selected: '이미 WOOX Pro 선택 → API 미호출·카드 없음', inactive: '프로모션 종료 → 미노출' };
-      body += '<div class="tag-note">' + (reasonMap[cmp.data.reason] || '미노출') + '</div>';
+      var cmp = API.cashbackCompare({
+        exchange: exKey, balance: params.balance, leverage: params.leverage,
+        makerRatio: params.makerRatio, takerRatio: params.takerRatio,
+        dailyTradeFrequency: params.freq, forceError: s.mode === 'err500', unsupported: s.mode === 'unsupported'
+      });
+      if (cmp.status === 'error') {
+        body += '<div class="tag-note">비교 카드 미삽입 (에러 ' + cmp.httpStatus + ')</div>';
+        setTimeout(function () { toast('[' + cmp.httpStatus + ' ' + cmp.code + '] ' + (cmp.message || ''), 'err'); }, 60);
+      } else if (cmp.data.visible) {
+        body += compareCard(exView, cmp.data);
+      } else {
+        var reasonMap = { adverse: '역효과(현재 거래소가 유리) → 비교 카드 미노출', unsupported: 'WOOX Pro 미지원 조건 → 미노출', woox_selected: '이미 WOOX Pro 선택 → API 미호출·카드 없음' };
+        body += '<div class="tag-note">' + (reasonMap[cmp.data.reason] || '미노출') + '</div>';
+      }
     }
 
     body += payoutDetails();
@@ -488,16 +506,16 @@
   // ---------------- 시나리오 드로어 (개발용·한국어 고정) ----------------
   function renderDrawer() {
     var d = document.getElementById('drawer');
-    var e = state.env;
-    var promoActive = status().active;
+    var a = admin();
     var h = '';
     h += '<div class="d-head"><h3>시나리오 · Scenarios</h3><button class="icon-btn" style="width:30px;height:30px" data-d="close">✕</button></div>';
-    h += '<div class="d-sec"><div class="lbl">프로모션 게이트 (F-005 · REQ-020)</div>';
-    h += toggleRow('D+30 이내', 'withinD30', e.withinD30);
-    h += toggleRow('WOOX 이벤트 1 종료', 'event1Terminated', e.event1Terminated);
-    h += toggleRow('WOOX 이벤트 2 종료', 'event2Terminated', e.event2Terminated);
-    h += toggleRow('상태 API 장애(안전=비활성)', 'simulateStatusError', e.simulateStatusError);
-    h += '<div class="hint">현재 프로모션: <b style="color:' + (promoActive ? '#34d399' : '#f87171') + '">' + (promoActive ? '활성' : '비활성(종료)') + '</b> · OR 로직·D+30. 비활성이면 3기능 일괄 base 롤백.</div></div>';
+    h += '<div class="d-sec"><div class="lbl">백오피스 노출 제어 (2026-07-07 정책)</div>';
+    h += toggleRow('S1 · WOOX Pro 가상 피드백', 's1Feedback', a.s1Feedback);
+    h += toggleRow('S1 · 트레블룰 배너(#2)', 's1Banner', a.s1Banner);
+    h += toggleRow('S2 · WOOX Pro 비교 안내', 's2Compare', a.s2Compare);
+    h += toggleRow('S2 · 트레블룰 배너(#1)', 's2Banner', a.s2Banner);
+    h += toggleRow('로그인 3페이지 트레블룰(#3·4·5)', 'loginBanners', a.loginBanners);
+    h += '<div class="hint">D+30·WOOX 이벤트 종속 게이트 <b>폐지</b> → 영역별 on/off로 전면 통제. 별도 <b>백오피스 페이지</b>(../backoffice)와 동일 제어. ⚠️ D+30 폐지는 OI-07 충돌(C레벨 재승인 필요).</div></div>';
     h += '<div class="d-sec"><div class="lbl">S1 · 출금 완료 (기능 1)</div><div class="opts">';
     S1_MODES.forEach(function (m) { h += '<span class="opt ' + (state.s1.mode === m.k ? 'on' : '') + '" data-s1="' + m.k + '">' + m.t + '</span>'; });
     h += '</div><div class="req">선택 REQ: ' + (find(S1_MODES, state.s1.mode).req) + '</div></div>';
@@ -509,7 +527,7 @@
     h += toggleRow('OI-10 경고 표시', 's2oi10', state.s2.oi10);
     h += '<div class="req">선택 REQ: ' + (find(S2_MODES, state.s2.mode).req) + '</div></div>';
     h += '<div class="d-sec"><div class="lbl">인증 상태</div><div class="hint">로그인: <b>' + (state.auth.loggedIn ? '됨' : '안됨') + '</b> · 로그인 화면에서 wrong@test.com / wrong 입력 시 자격 에러 재현</div></div>';
-    h += '<div class="d-sec"><div class="hint">배너 5위치: #1 S2하단 · #2 S1 · #3 모바일-로그인전(Log In/Sign Up 아래) · #4 PC로그인상단 · #5 마이페이지 회원ID하단. 프로모션 종료 시 전부 미노출.</div></div>';
+    h += '<div class="d-sec"><div class="hint">배너 5위치: #1 S2하단 · #2 S1 · #3 모바일-로그인전(Log In/Sign Up 아래) · #4 PC로그인상단 · #5 마이페이지 회원ID하단. 각 위치는 위 백오피스 on/off로 제어(#3·4·5는 일괄).</div></div>';
     d.innerHTML = h;
     d.querySelector('[data-d="close"]').addEventListener('click', function () { d.classList.remove('open'); });
     Array.prototype.forEach.call(d.querySelectorAll('[data-s1]'), function (n) { n.onclick = function () { state.s1.mode = n.getAttribute('data-s1'); render(); }; });
@@ -518,7 +536,8 @@
     Array.prototype.forEach.call(d.querySelectorAll('[data-tg]'), function (n) {
       n.onclick = function () {
         var key = n.getAttribute('data-tg');
-        if (key === 's2oi10') state.s2.oi10 = !state.s2.oi10; else state.env[key] = !state.env[key];
+        if (key === 's2oi10') state.s2.oi10 = !state.s2.oi10;
+        else setAdmin(key, !admin()[key]); // 백오피스 on/off (localStorage 공유)
         render();
       };
     });
@@ -545,6 +564,9 @@
       render();
     });
   }
+
+  // 백오피스 페이지에서 on/off 변경 시(다른 탭) 실시간 반영
+  window.addEventListener('storage', function (e) { if (e.key === ADMIN_KEY) render(); });
 
   go('s1');
 })();

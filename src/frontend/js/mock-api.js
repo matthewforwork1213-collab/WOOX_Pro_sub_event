@@ -35,32 +35,12 @@
   function round1(n) { return Math.round(n * 10) / 10; }
   function round2(n) { return Math.round(n * 100) / 100; }
 
-  // 프로모션 활성 게이트 (기능명세서_BE §1.1 / F-005)
-  //   active = (D+30 이내) AND (2개 WOOX Pro 이벤트 모두 미종료)
-  function isActive(env) {
-    if (env.simulateStatusError) return false; // 안전 기본값(장애 시 비활성)
-    return env.withinD30 && !env.event1Terminated && !env.event2Terminated;
-  }
-
-  // ==== API-001: 프로모션 상태 (F-004·F-005) =================================
-  function getStatus(env) {
-    if (env.simulateStatusError) {
-      // 판정 불가 시 500 대신 active:false 안전 응답 (기능명세서_BE F-005 예외)
-      return { status: 'success', data: { active: false, travelRuleBanner: { i18nKey: 'promo.travelrule.badge' } } };
-    }
-    return {
-      status: 'success',
-      data: { active: isActive(env), travelRuleBanner: { i18nKey: 'promo.travelrule.badge' } }
-    };
-  }
+  // 노출 제어(2026-07-07 정책): 기존 D+30·2개 WOOX 이벤트 게이트 폐지.
+  // 영역별 가시성은 백오피스 on/off(app.js state.admin)에서 판정한다. mock-api는 순수 계산만 수행.
 
   // ==== API-002: 출금 완료 후 가상 피드백 / 이벤트 분기 (F-001·F-002) ========
   // params: { wooxIncluded:bool, uids:[{exchange, actualPayback}], eventTier, forceError }
-  function withdrawalFeedback(env, params) {
-    if (!isActive(env)) {
-      // 프로모션 비활성 → 원 base 로직(진행 중 거래소 이벤트 임의 1개). house_ad 아님.
-      return { status: 'success', data: { case: 'base', baseFallback: true } };
-    }
+  function withdrawalFeedback(params) {
     if (params.forceError) {
       return { status: 'error', httpStatus: 500, code: 'INTERNAL_ERROR' }; // FE는 base 폴백
     }
@@ -113,9 +93,7 @@
 
   // ==== API-003: 캐시백 프리뷰 WOOX Pro 비교 (F-003) =========================
   // params: { exchange, balance, leverage, makerRatio, takerRatio, dailyTradeFrequency, forceError }
-  function cashbackCompare(env, params) {
-    if (!isActive(env)) return { status: 'success', data: { visible: false, reason: 'inactive' } };
-
+  function cashbackCompare(params) {
     // 입력 검증
     if (params.makerRatio + params.takerRatio !== 100)
       return { status: 'error', httpStatus: 400, code: 'BAD_REQUEST', message: 'Maker + Taker must equal 100%.' };
@@ -158,9 +136,8 @@
   global.MockAPI = {
     EXCHANGES: EXCHANGES,
     TIME_MAP: TIME_MAP,
-    getStatus: getStatus,
     withdrawalFeedback: withdrawalFeedback,
     cashbackCompare: cashbackCompare,
-    _util: { nominalTS: nominalTS, previewTS: previewTS, percentPoint: percentPoint, isActive: isActive }
+    _util: { nominalTS: nominalTS, previewTS: previewTS, percentPoint: percentPoint }
   };
 })(window);
