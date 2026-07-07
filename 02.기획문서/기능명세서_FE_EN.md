@@ -25,21 +25,23 @@
 
 Each feature detail (§2) references this section rather than repeating it.
 
-### 1.1 Promotion Gate Consumption and Fallback
+### 1.1 Visibility Control — Per-Area Backoffice On/Off (2026-07-07 policy)
 
-- All promotion UI is **dependent on the F-005 state (`active`)**. It is queried once at the common layout level, or queried upon entering each screen.
-- Fallback when `active=false` or on API failure/timeout:
+> **Policy change (2026-07-07)**: The previous "D+30 + 2 WOOX Pro events" common gate is abolished → visibility is controlled via **per-area backoffice on/off**. F-005 provides 5 flags. ⚠️ Abolishing D+30 conflicts with OI-07 — awaiting C-level re-approval.
 
-| Feature | Fallback Behavior |
-|---|---|
-| F-001 (Virtual Feedback) | Card not shown → **revert to the original base event logic (show 1 randomly selected ongoing exchange event)** |
-| F-002 (Event Branching) | **Revert to the original base event logic (show 1 randomly selected ongoing exchange event)** (no `eventType` branching when the promotion has ended) |
-| F-003 (Comparison Card) | Card not inserted → existing result screen only |
-| F-004 (Banner) | 5-location banners not shown |
+- Each area falls back as below when its corresponding backoffice flag is **OFF** (per-area independent).
 
-- **Safe default**: On status API failure, treated as `active=false` (inactive) — the existing service experience is not harmed even during an outage.
+| Area | Backoffice flag | When OFF |
+|---|---|---|
+| F-001 Virtual Feedback | `s1Feedback` | Card not shown → **original base event logic (1 random ongoing exchange event)** |
+| F-003 Comparison Card | `s2Compare` | Card not inserted → existing result screen only |
+| F-004 Banner #2 (S1) | `s1Banner` | That banner not shown |
+| F-004 Banner #1 (S2) | `s2Banner` | That banner not shown |
+| F-004 Banner #3·#4·#5 | `loginBanners` | Three positions hidden collectively |
 
-> **Note — distinguish the two fallbacks.** The table above is the **revert to original base** when the promotion is **inactive (`active=false`: terminated/expired)**. In contrast, when the promotion is **active** but an individual request is ineligible (`visible=false`: adverse case/calculation impossible), F-001 takes the 3-tier fallback of **Onboarding Event → house ad** (§2 F-001 processing step 2, PRD §2-A-2). The Onboarding Event and house ad are **content available while the promotion is active**, so they are not shown once the promotion has ended.
+> **Note — distinguish two cases.** The above is **backoffice OFF** (visibility control). In contrast, when the flag is ON but an individual request is **ineligible (`visible=false`: adverse/calculation impossible)**, F-001 takes the 3-tier fallback of **Onboarding Event → house ad** (§2 F-001 processing, PRD §2-A-2). F-002 (WOOX-included event branching) operates regardless of any visibility flag.
+
+- **Safe default**: On settings-query failure, treat all as **OFF** — the existing service experience is not harmed even during an outage.
 
 ### 1.2 Platform Scope Matrix
 
@@ -125,25 +127,25 @@ Each feature detail (§2) references this section rather than repeating it.
 
 | Item | Content |
 |---|---|
-| Description | During the promotion active period, a Travel Rule Integration Banner is shown in 5 locations |
-| Input | Screen entry event (each of the 5 screens) — no user input; on click it navigates to the WOOX Pro exchange detail |
-| Processing | 1) On entry, query the promotion active state (F-005) 2) If active, render the banner component — logo (`[Bithumb logo]` ⇄ `[WOOX Pro logo]`, design-hardcoded image · left-right arrow ⇄ between the logos) + text (i18n text, per locale: KO "트레블룰 연동" / EN "Travel Rule Integration") 3) Pre-login screens (#3·#4) also use identical logic regardless of session (REQ-019) 4) **On banner click, navigate to the WOOX Pro exchange detail page** (CTA URL = admin onboarding-registered value, OI-06) |
+| Description | A Travel Rule Integration Banner is shown in 5 locations (visibility via backoffice on/off). Navigates to WOOX Pro detail on click |
+| Input | Screen entry event (each of the 5 screens) — no user input. On click, navigates to the WOOX Pro exchange detail |
+| Processing | 1) On entry, check the per-position backoffice flag (#2=`s1Banner`, #1=`s2Banner`, #3·#4·#5=`loginBanners`) 2) If ON, render the banner component — logo (`[Bithumb logo]` ⇄ `[WOOX Pro logo]`, design-hardcoded image · left-right arrow ⇄ between the logos) + text (i18n text, per locale: KO "트레블룰 연동" / EN "Travel Rule Integration") 3) Pre-login screens (#3·#4) also use identical logic regardless of session (REQ-019) 4) **On banner click, navigate to the WOOX Pro exchange detail page** (CTA URL = admin onboarding-registered value, OI-06) |
 | Banner Composition Rule | Order fixed as **logo (front, ⇄ between) → text (back)** (common across all languages, REQ-017). Logo is a hardcoded image (not admin-loaded), text is multilingual text (image prohibited). **Restrained badge** style. **Navigates to WOOX Pro detail on click** (REQ-018 revised 2026-07-07 — changed from the previous static/no-click. ⚠️ OI-09 legal re-confirmation needed) |
 | 5 Locations | #1 Below Cashback Preview Result (S2) · #2 Outside below Withdrawal Result Card (S1) · #3 Below MO pre-login button (S4) · #4 Top of PC Login Page (S3) · #5 Below Member ID on My Page (S5) |
-| Exception Handling | When promotion is inactive, all 5 locations are not shown. In the App environment, only S1·S2 are rendered; S3~S5 are native and thus excluded from rendering targets (§1.2) |
+| Exception Handling | If a position's backoffice flag is OFF, that banner is not shown (#3·#4·#5 collectively via `loginBanners`). In the App environment, only S1·S2 are rendered; S3~S5 are native and thus excluded (§1.2) |
 | Related Screens | S1·S2 — PC·MO·App / S3·S4·S5 — Web (PC/MO) only |
 | Related API | GET /api/promo/status (API-001, uses `active` + `travelRuleBanner.i18nKey`) |
 | Requirements | REQ-016~019 |
 
-### F-005. Promotion Active State Reflection (Screen Branching)
+### F-005. Visibility Control State Reflection (Backoffice On/Off)
 
 | Item | Content |
 |---|---|
-| Description | Queries the promotion active/ended state that F-001~F-004 commonly reference, and if inactive, renders all screens with base logic |
+| Description | Queries the 5 per-area backoffice on/off flags (`s1Feedback`·`s1Banner`·`s2Compare`·`s2Banner`·`loginBanners`) and decides each area's rendering (2026-07-07: D+30 · 2-WOOX-event gate abolished) |
 | Input | Screen entry event — no user input |
-| Processing | 1) On entry to each screen (or once at the common layout), query the status API 2) If `active=false`, immediately branch per the §1.1 fallback table |
-| Output (UI) | None (not a directly rendered element) — a common state value that determines whether F-001~F-004 render |
-| Exception Handling | On API failure, safe default is **inactive** (nudge not shown, existing logic maintained) |
+| Processing | 1) On entry (or once at the common layout), query the status API 2) For each area flag that is OFF, fall back per the §1.1 table (only that area to base) |
+| Output (UI) | None (not a directly rendered element) — the 5 flags that determine each area's rendering |
+| Exception Handling | On API failure, safe default is **all flags OFF** (nudges/banners not shown, existing logic maintained) |
 | Related Screens | All of S1~S5 (common layer) |
 | Related API | GET /api/promo/status (API-001) |
 | Requirements | REQ-020~022 |
@@ -160,7 +162,7 @@ Each feature detail (§2) references this section rather than repeating it.
 | S2 | Other exchange & `visible=true` | Result card + inline Comparison Card (F-003, expanded) + Banner #1 |
 | S2 | Other exchange & `visible=false` (counter-effect·unsupported) | Result card only + Banner #1 |
 | S2 | WOOX Pro selected | Result card only (API not called) + Banner #1 |
-| S3~S5 | Promotion active | Location-specific banner only (#4/#3/#5) |
+| S3~S5 | `loginBanners` ON | Location-specific banner only (#4/#3/#5) |
 | All | Promotion inactive | No nudges·banners shown at all (base) |
 
 ---
@@ -169,7 +171,7 @@ Each feature detail (§2) references this section rather than repeating it.
 
 | Situation | FE Behavior |
 |---|---|
-| Status API (F-005) failure | Treated as `active=false`, nudges·banners not shown |
+| Status API (F-005) failure | Safe default all OFF, nudges·banners not shown |
 | F-001 `visible=false` | Card not shown → Onboarding Event → house ad fallback |
 | F-001/F-002 API failure·500 | Existing base event logic fallback |
 | F-001 400 (`uids` format error) | base event logic fallback (rare — `uids` is a system-provided value) |

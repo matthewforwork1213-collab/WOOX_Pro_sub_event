@@ -15,7 +15,7 @@
 |------|------|
 | **Purpose** | For 30 days immediately following the new onboarding of the WOOX Pro exchange, leverage traffic and UI Nudges within the TetherMax platform to maximize the user conversion rate and sign-up rate to WOOX Pro |
 | **Core Strategy** | Presenting comparative figures that stimulate the user's **'Loss Aversion'** bias, combined with well-timed UI Nudges (post-withdrawal Virtual Feedback + inline comparison card on the result page) |
-| **Promotion Period** | **Lasts only 30 days** from the point of WOOX Pro exchange onboarding (launch) (rolled back to the existing logic thereafter; not made permanent) |
+| **Promotion Period** | ⚠️ **Policy change 2026-07-07**: D+30 auto-termination abolished → visibility is fully controlled by **per-area backoffice on/off**. Conflicts with the prior "launch + 30 days only, not made permanent" (OI-07) — **awaiting C-level re-approval** |
 
 ---
 
@@ -45,7 +45,7 @@ When a user completes a withdrawal (including simultaneous withdrawals across mu
 
 (See §2-A-3 for the detailed branching logic)
 
-> **Feature 3 is also displayed on the same screen**: Below the result card area of this Withdrawal Completion Screen (S1), outside and at the bottom, **Feature 3 (WOOX Pro x Bithumb Travel Rule Integration Banner, position #2)** is displayed independently of the Case A/B branching. Whether it is displayed follows the same common Promotion Active gate (§3-3) as Feature 1. See the Feature 3 section for details.
+> **Feature 3 is also displayed on the same screen**: Below the result card area of this Withdrawal Completion Screen (S1), outside and at the bottom, **Feature 3 (WOOX Pro x Bithumb Travel Rule Integration Banner, position #2)** is displayed independently of the Case A/B branching. Whether it is displayed follows the backoffice Travel Rule banner on/off (§3-3). See the Feature 3 section for details.
 
 ---
 
@@ -84,7 +84,7 @@ Triggered at the moment the user enters the **[Result Page]** after entering the
 - The WOOX Pro Comparison Card is **not inserted**
 - Only the existing normal payback result screen is displayed
 
-> **Feature 3 is also displayed on the same screen**: Below the inline comparison card of this Cashback Preview Result Screen (S2), **Feature 3 (WOOX Pro x Bithumb Travel Rule Integration Banner, position #1)** is displayed independently of the Case A/B branching. Whether it is displayed follows the same common Promotion Active gate (§3-3) as Feature 2. See the Feature 3 section for details.
+> **Feature 3 is also displayed on the same screen**: Below the inline comparison card of this Cashback Preview Result Screen (S2), **Feature 3 (WOOX Pro x Bithumb Travel Rule Integration Banner, position #1)** is displayed independently of the Case A/B branching. Whether it is displayed follows the backoffice Travel Rule banner on/off (§3-3). See the Feature 3 section for details.
 
 ---
 
@@ -103,7 +103,7 @@ Display that WOOX Pro is **an exchange integrated with Bithumb via Travel Rule**
 | **Order** | The order Logo (first) → Text (after) is **fixed and common across all languages** |
 | **Style** | **Understated** — badge form without excessive emphasis |
 | **Click Behavior** | **Navigates to the WOOX Pro exchange detail page on click** (CTA URL = admin onboarding-registered value, OI-06). Feature 3 revised (2026-07-07) — changed from the previous "static, no click." ⚠️ The OI-09 legal risk acceptance was premised on a static informational banner and must be re-confirmed |
-| **Exposure Policy** | **Promotion-limited** — subordinate to the common termination gate (2 WOOX Pro event terminations OR + D+30). All 5 positions removed upon termination. **Pre-login screens (#3, #4) are displayed based solely on global Promotion Active status, regardless of user session** |
+| **Exposure Policy** | **Controlled by per-area backoffice on/off** (2026-07-07: D+30 · 2-WOOX-event gate abolished, §3-3). Travel Rule banner is on/off per position (#1·#2 individually, #3·#4·#5 collectively). **Pre-login screens (#3, #4) are displayed regardless of user session** |
 
 **Exposure Positions (5)**
 
@@ -117,7 +117,7 @@ Display that WOOX Pro is **an exchange integrated with Bithumb via Travel Rule**
 
 **Compliance (Risk-Accepted Decision)**
 
-- **Management Decision**: Displayed first without prior legal approval, and **taken down immediately if an issue is raised** (risk-accepted). The means of "taking down" is the common Termination Gate (the termination buttons of the 2 WOOX Pro events — note that in this case all 3 features are terminated together; see the no-partial-termination policy in §3-3).
+- **Management Decision**: Displayed first without prior legal approval, and **taken down immediately if an issue is raised** (risk-accepted). The means of "taking down" is the **backoffice Travel Rule banner on/off** (only that position can be turned OFF immediately, §3-3). ⚠️ However, the Feature 3 revision (navigates to WOOX Pro detail on click) changes the banner from a static informational banner to a CTA, so the OI-09 legal risk acceptance must be re-confirmed.
 - Logo assets: **Hardcoded in the design** (both Bithumb and WOOX Pro). No Admin registration, dynamic loading, or separate delivery required.
 - Remaining dependency: **Only the final translated copy for "Travel Rule Integration"** needs to be secured (OI-09).
 
@@ -278,7 +278,7 @@ The WOOX Pro Comparison Card is not inserted, and only the normal payback result
 ### 2-A-6. Promotion Period Criteria
 
 - The "onboarding point" is **the point at which the WOOX Pro exchange is onboarded to the platform (a globally fixed date)**, and D+30 applies identically to all users from that point. (Promotion start date = exchange onboarding date)
-- Features 1, 2, and 3 are turned on and off together via **a single termination gate** (2 WOOX Pro event termination buttons OR + D+30). There is no individual termination per feature (see §3-3).
+- Visibility is controlled independently via **5 per-area backoffice on/off** (partial control allowed). The prior "single gate turning all 3 features on/off together" is abolished (see §3-3, 2026-07-07).
 
 ---
 
@@ -301,31 +301,26 @@ The WOOX Pro Comparison Card is not inserted, and only the normal payback result
 | **Collapse Option** | Comparison card collapse **provided** (confirmed per OI-05). No forced close (X) UI |
 | **Adverse-Case/Unsupported Filter** | The comparison card is **not inserted** when the other exchange's Total Saving Rate ≥ WOOX Pro's, or when an accurate comparison is not possible (see 3-1) |
 
-### 3-3. Early Promotion Termination and Admin Control
+### 3-3. Visibility Control — Per-Area Backoffice On/Off (policy change 2026-07-07)
 
-Beyond automatic expiration (D+30), the promotion can also be terminated early via the Admin. **Early termination is not newly developed in this project; it is handled via the termination button already present on the existing Admin lookup screens for the 2 WOOX Pro events.**
+> ⚠️ **Policy change (2026-07-07)**: The previous "D+30 auto-termination + 2 WOOX Pro event termination buttons (OR) + collective rollback of all 3 features" gate is **fully abolished**, and visibility is controlled via **per-area on/off on a new backoffice page**. **Abolishing D+30 auto-termination conflicts with OI-07 (C-level: launch + 30 days only, not made permanent)** (permanent display becomes possible) and with the project name ("30-Day Intensive Promotion"), so **C-level re-approval is required**.
 
-| Item | Content |
-|------|------|
-| **Automatic Termination** | Automatically rolls back to normal-time logic upon reaching D+30 from the WOOX Pro exchange onboarding point |
-| **Early Termination Method** | **Each of the 2 WOOX Pro events'** individual Admin termination button (reuse of existing Admin, not new development) |
-| **OR Logic** | **Termination applies even if only 1 of the 2 termination buttons is clicked** |
-| **Termination Scope** | Upon termination, **all 3 promotion features (Features 1, 2, 3) are rolled back together in a batch.** No partial (per-feature) termination |
-| **Termination Trigger** | (a) Automatic D+30 expiration, or (b) clicking the termination button of either of the 2 events — **whichever comes first** |
+**New control — 5 backoffice on/off (per-area, independent, partial control allowed):**
 
-**Rollback Behavior upon Termination (or D+30) — All 3 Features Simultaneously:**
-
-| Feature | Behavior After Rollback |
-|------|------|
-| **Feature 1** | Reverts to the existing "display 1 random currently-running exchange event" logic for the ad after withdrawal completion. Virtual Feedback not displayed. |
-| **Feature 2** | The WOOX Pro comparison card is not inserted in the Cashback Preview result. Only the existing normal result screen is displayed. |
-| **Feature 3** | The Travel Rule trust banner is removed from all 5 positions. |
+| # | Backoffice item | Target | When OFF |
+|------|------|------|------|
+| 1 | Withdrawal-complete WOOX Pro Virtual Feedback | Feature 1 (S1) | Virtual Feedback not shown → existing "1 random ongoing exchange event" logic |
+| 2 | Withdrawal-complete Travel Rule banner | Feature 3 #2 (S1) | Banner not shown |
+| 3 | Cashback Preview WOOX Pro comparison | Feature 2 (S2) | Comparison card not inserted (result screen only) |
+| 4 | Cashback Preview Travel Rule banner | Feature 3 #1 (S2) | Banner not shown |
+| 5 | Login 3-page Travel Rule banner | Feature 3 #3·#4·#5 | Three positions (PC login · MO pre-login · My Page) hidden collectively |
 
 **Implementation Requirements:**
 
-- **Promotion Active determination = (within D+30) AND (both WOOX Pro events not terminated).** If either is terminated or D+30 has passed, **all 3 features immediately revert to base logic.**
-- Development and deployment can proceed in parallel per feature, but **runtime termination applies to all 3 features together via the single gate above** (no individual per-feature termination).
-- How to handle screens already rendered at the time of termination, the scope of Admin termination authority, and whether re-activation (resumption) after termination is possible will be defined at a later time.
+- Each item toggles **independently** (a single area can be turned off — the previous "all-3-together / no partial termination" is abolished).
+- The previous D+30 auto-termination and 2 WOOX Pro event termination-button dependency are **not used.**
+- On settings-query failure, safely treat as **hidden (OFF).**
+- Admin authority scope, handling of screens mid-exposure, and (replacing D+30) termination scheduling are defined later (§5 follow-up).
 
 ---
 
@@ -360,13 +355,13 @@ Beyond automatic expiration (D+30), the promotion can also be terminated early v
 
 [Promotion Active Determination — Common Precheck Before Entering Each Feature]
 │
-├── Active = (within D+30) AND (both WOOX Pro events not terminated)
+├── Visible per area = backoffice on/off (D+30 · WOOX-event gate abolished, 2026-07-07)
 │
-└── Terminated (= D+30 elapsed OR either of the 2 events terminated) → All 3 features revert together to base logic
+└── Any area OFF in backoffice → that area falls back to base (independent per area)
     ├── Feature 1 → Existing "1 random exchange event" logic
     ├── Feature 2 → Existing result screen without the WOOX Pro comparison card
     └── Feature 3 → Travel Rule banner removed from all 5 positions
-    (※ All 3 features are turned on and off together via a single termination gate)
+    (※ Each area is controlled independently by backoffice on/off)
 ```
 
 ---
@@ -385,8 +380,8 @@ Beyond automatic expiration (D+30), the promotion can also be terminated early v
 - [x] Adverse-case prevention determination criterion → **Total Saving Rate**. Not displayed if another exchange's Total Saving ≥ WOOX Pro's (displayed only when WOOX Pro is strictly greater) (§3-1)
 - [x] Simultaneous withdrawal across multiple exchanges (UIDs) → sum only UIDs that are not adverse cases and are positive, **displayed as a single total amount** (multiple UIDs also not listed), "based on N exchanges" caption
 - [x] Definition of "TetherMax-type event" → TetherMax WOOX Pro Onboarding Event
-- [x] Promotion termination → **existing 2 WOOX Pro event termination buttons (OR, applies even if only 1 is clicked) + D+30**. Upon termination, **all 3 features are rolled back together in a batch** (no partial termination). Not new development (§3-3)
-- [x] Feature 3 Travel Rule banner → **promotion-limited** (common termination gate above), 5 positions, logo = hardcoded image (⇄ between logos) · copy = translated text, **navigates to WOOX Pro detail on click** (Feature 3 revised 2026-07-07, ⚠️ OI-09 legal re-confirmation)
+- [x] Visibility control → **5 per-area backoffice on/off** (partial control allowed). The prior "2 WOOX event OR + D+30 collective rollback" is abolished (§3-3, 2026-07-07). ⚠️ Abolishing D+30 conflicts with OI-07 — awaiting C-level re-approval
+- [x] Feature 3 Travel Rule banner → 5 positions, logo = hardcoded image (⇄ between logos) · copy = translated text, **navigates to WOOX Pro detail on click** (Feature 3 revised 2026-07-07, ⚠️ OI-09 legal re-confirmation), visibility via backoffice on/off
 - [x] Banner copy → KO "트레블룰 연동" / EN "Travel Rule Integration" (standard localization for other languages)
 - [x] Promotion start date → **the point of WOOX Pro exchange onboarding** (globally fixed date)
 - [x] Comparison target exchanges → **all exchanges that have completed onboarding & have exposure = Y** (dynamic)
@@ -417,7 +412,7 @@ To allow developers to begin work without omission on a **page/feature basis**, 
 
 | Category | Task |
 |------|------|
-| BE | ① **Promotion Active determination** = (within D+30) AND (both WOOX Pro events not terminated) → all 3 features batch-rolled-back upon termination · ② Promotion period determination (WOOX Pro exchange onboarding = globally fixed date +30 days) · ③ Exchange master lookup (Discount Rate, Payback Rate, exposure Y, logo, sign-up/detail URL, Admin onboarding registration value) · ④ **Total Saving Rate calculation** — Nominal (Feature 1) `1−(1−Discount Rate)(1−Payback Rate)` / Preview (Feature 2, Correction Factor fixed at 0.7) `1−(1−Discount Rate)(1−Payback Rate×0.7)` · ⑤ **Adverse-case determination** (not displayed if other Total Saving ≥ WOOX Pro's, using the formula appropriate to each feature) |
+| BE | ① **Visibility control** = query 5 per-area backoffice on/off flags (D+30 · 2-WOOX-event gate abolished, 2026-07-07) · ② Promotion period determination (WOOX Pro exchange onboarding = globally fixed date +30 days) · ③ Exchange master lookup (Discount Rate, Payback Rate, exposure Y, logo, sign-up/detail URL, Admin onboarding registration value) · ④ **Total Saving Rate calculation** — Nominal (Feature 1) `1−(1−Discount Rate)(1−Payback Rate)` / Preview (Feature 2, Correction Factor fixed at 0.7) `1−(1−Discount Rate)(1−Payback Rate×0.7)` · ⑤ **Adverse-case determination** (not displayed if other Total Saving ≥ WOOX Pro's, using the formula appropriate to each feature) |
 | FE | ① Multilingual (i18n) resources · ② USDT amount/%p formatter · ③ Common brand-color Primary CTA component |
 
 ### 6-1. Feature 1 — Virtual Feedback After Withdrawal Completion (Screen S1)
@@ -446,5 +441,5 @@ To allow developers to begin work without omission on a **page/feature basis**, 
 
 ### 6-4. Parallel Development · Termination Unit
 
-- The three features can be **developed and deployed individually in parallel**. However, **runtime termination uses a single common gate** (2 WOOX Pro event termination buttons OR + D+30) that applies to **all 3 features together** — no individual per-feature termination.
+- The three features can be **developed and deployed individually in parallel**. **Runtime visibility is controlled independently via 5 per-area backoffice on/off** (partial control allowed; the prior single-gate collective model is abolished, 2026-07-07).
 - Detailed API signatures, request/response schemas, and DB columns will be finalized in subsequent deliverables (Functional Specification FE/BE #6a/#6b, API Specification #7, DB Design Document #12).

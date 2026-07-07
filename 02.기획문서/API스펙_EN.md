@@ -53,7 +53,7 @@
 |---|---|
 | Method | GET |
 | URL | /api/promo/status |
-| Description | Queries whether the promotion overall is active or inactive. This is the gate commonly referenced by F-001~F-004, and is also used for the display determination of the Travel Rule Integration Banner (F-004). Callable regardless of login status (REQ-019) |
+| Description | Queries the 5 per-area backoffice visibility on/off flags. F-001·F-003·F-004 consume their own area's flag. Callable regardless of login status (REQ-019). **(2026-07-07 policy: D+30 · 2-WOOX-event gate abolished → per-area on/off)** |
 
 **Request**
 
@@ -67,7 +67,11 @@
 {
   "status": "success",
   "data": {
-    "active": true,
+    "s1Feedback": true,
+    "s1Banner": true,
+    "s2Compare": true,
+    "s2Banner": true,
+    "loginBanners": true,
     "travelRuleBanner": {
       "i18nKey": "promo.travelrule.badge"
     }
@@ -75,14 +79,16 @@
 }
 ```
 
-- `active`: Whether the promotion is active. If false, F-001 · F-002 fall back to base logic, and F-003 · F-004 are not displayed (REQ-020~022)
+- `s1Feedback`: Whether the withdrawal-complete WOOX Pro Virtual Feedback (F-001) is shown. If false, F-001 falls back to base logic
+- `s1Banner`·`s2Banner`·`loginBanners`: Whether the Travel Rule banner is shown (#2 / #1 / #3·#4·#5 collectively) (F-004)
+- `s2Compare`: Whether the Cashback Preview WOOX Pro comparison (F-003) is shown. If false, the comparison card is not inserted (REQ-020~022)
 - `travelRuleBanner.i18nKey`: The i18n key for the banner copy (the logo image is hardcoded in the design, so it is not delivered via the API, REQ-017)
 
 **Error Response**
 
 | Status Code | Error Code | Condition |
 |---|---|---|
-| 500 | INTERNAL_ERROR | Determination not possible, e.g., failure to query the event termination state — in this case the server prioritizes responding safely with `active: false` instead of an error (see 기능명세서_BE_EN.md F-005 exception handling) |
+| 500 | INTERNAL_ERROR | Determination not possible, e.g., settings-query failure — in this case the server prioritizes responding safely with **all 5 flags false** instead of an error (see 기능명세서_BE_EN.md F-005 exception handling) |
 
 ---
 

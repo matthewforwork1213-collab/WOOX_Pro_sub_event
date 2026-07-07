@@ -25,22 +25,23 @@
 
 All features assume the common rules below. Each feature detail (§3) references this section rather than repeating it.
 
-### 1.1 Promotion Active Gate (Precondition for All Features)
+### 1.1 Visibility Control — Per-Area Backoffice On/Off (2026-07-07 policy)
 
-- All promotion logic **checks the F-005 decision value (`active`) with top priority**. If `active=false`, each feature immediately switches to the fallback below.
+> **Policy change (2026-07-07)**: The previous common gate "D+30 AND both WOOX Pro events not terminated" is **abolished**, and each display area is **controlled independently via backoffice on/off**. ⚠️ Abolishing D+30 conflicts with OI-07 (C-level: launch + 30 days only, not made permanent) — C-level re-approval required. Permanent display becomes possible.
 
-| Feature | Behavior when `active=false` |
-|---|---|
-| F-001 (Virtual Feedback) | Returns `visible=false` → FE reverts to the original base event logic (show 1 randomly selected ongoing exchange event) |
-| F-002 (Event Branch) | Reverts to the original base logic (1 randomly selected ongoing exchange event) without promotion event branching. **This differs from `house_ad` (the tier-3 content while the promotion is active)** — on termination the revert target is the original base logic |
-| F-003 (Comparison Calculation) | Returns `visible=false` → Comparison Card not inserted |
-| F-004 (Banner Decision) | Returns `visible=false` → Banner not displayed |
+- Each area is shown **only when its corresponding backoffice flag is ON** (F-005 provides 5 flags). Partial control allowed (per-area independent).
 
-- Active decision formula (REQ-020):
-```
-active = (current time ≤ WOOX Pro onboarding reference date + 30 days) AND (both WOOX Pro events not terminated)
-```
-- If **even one** of the two events is terminated in the Admin, `active=false` immediately (OR logic). Upon a termination trigger, the 3 features roll back to base **together** (no partial termination, REQ-021). There is no new termination UI; the **existing WOOX Pro event Admin termination button** is used as-is (REQ-022).
+| Area | Backoffice flag | When OFF |
+|---|---|---|
+| Withdrawal-complete WOOX Pro Virtual Feedback (F-001) | `s1Feedback` | Virtual Feedback not shown → original base event logic (1 random ongoing exchange event) |
+| Withdrawal-complete Travel Rule banner #2 (F-004) | `s1Banner` | Banner not shown |
+| Cashback Preview WOOX Pro comparison (F-003) | `s2Compare` | Comparison card not inserted |
+| Cashback Preview Travel Rule banner #1 (F-004) | `s2Banner` | Banner not shown |
+| Login 3-page Travel Rule #3·#4·#5 (F-004) | `loginBanners` | Three positions hidden collectively |
+
+- Each flag is **independent** (a single area can be turned OFF). The previous "collective rollback of 3 features / no partial termination" is **abolished** (REQ-021 revised).
+- Managed via the on/off of the **new backoffice visibility-control page**, with no new termination UI (the previous 2-WOOX-event termination-button dependency is abolished, REQ-022).
+- Event branching for WOOX Pro-included withdrawals (F-002) operates regardless of `s1Feedback` (event branching is separate from the Virtual Feedback notice).
 
 ### 1.2 Time Handling (KST Internal / UTC Response)
 
@@ -197,7 +198,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 |---|---|
 | Description | Receives a list of withdrawal UIDs, reverse-calculates the actual payback amount (§2.4), and derives the WOOX Pro Virtual Feedback savings amount |
 | Input | `uids` (list of withdrawal UIDs, comma-separated, multiple possible), user identifier (session) |
-| Processing | 1) Pre-check `active` via F-005 — if false, immediately `visible=false` (§1.1) 2) For each UID, look up the actual payback amount from the user UID table (KST 20:00 batch data, §1.6) 3) For each UID, compute **base fee reverse-calculation → additional savings** using the exchange's Discount Rate·Payback Rate (§2.4) 4) Per-UID adverse-case decision: if another exchange's nominal Total Saving Rate ≥ WOOX Pro (80%), mark that UID as adverse-case and exclude it from the sum (§1.4) 5) Sum only the UIDs that are non-adverse & have a positive savings amount into a **single total** 6) If the sum is less than 1 USDT, correct to 1; if 0 or less, `visible=false` (§1.5) 7) For multiple UIDs, unify `savingPercentPoint` via the **base-fee weighted average** (§2.3; no simple sum, no arithmetic mean) |
+| Processing | 1) Check the backoffice `s1Feedback` flag — if OFF, immediately `visible=false` (§1.1) 2) For each UID, look up the actual payback amount from the user UID table (KST 20:00 batch data, §1.6) 3) For each UID, compute **base fee reverse-calculation → additional savings** using the exchange's Discount Rate·Payback Rate (§2.4) 4) Per-UID adverse-case decision: if another exchange's nominal Total Saving Rate ≥ WOOX Pro (80%), mark that UID as adverse-case and exclude it from the sum (§1.4) 5) Sum only the UIDs that are non-adverse & have a positive savings amount into a **single total** 6) If the sum is less than 1 USDT, correct to 1; if 0 or less, `visible=false` (§1.5) 7) For multiple UIDs, unify `savingPercentPoint` via the **base-fee weighted average** (§2.3; no simple sum, no arithmetic mean) |
 | Output Fields | `case`="non_woox_pro", `visible` (bool), `savingAmount` (USDT, Total Saving basis, value after <1 correction), `savingPercentPoint` (nominal %p — for multiple UIDs, §2.3 base-fee weighted average), `exchangeCount` (number of UIDs included in the sum, for the "based on N exchanges" caption) |
 | Exception Handling | No batch payback data for a specific UID → exclude only that UID from calculation (not an error). Calculation impossible for all UIDs → `visible=false`. Calculation failure (500) → FE base fallback. The batch-lag notice time is returned in UTC, and the FE converts to local (§1.2) |
 | Related Screen | S1 (Withdrawal Completion Screen) |
@@ -210,7 +211,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 |---|---|
 | Description | Decides, by priority, the event type to display for withdrawal cases that include WOOX Pro |
 | Input | `uids` (to determine WOOX Pro inclusion), Admin-registered event list |
-| Processing (3-step priority) | 1) Check `active` via F-005 2) WOOX Pro's own event is registered active in the Admin → `eventType=woox_event` (**absolute priority**: WOOX Pro takes priority even if a concurrent withdrawal has another exchange's event) 3) If none, TetherMax WOOX Pro Onboarding Event active → `eventType=onboarding_event` 4) If neither, `eventType=house_ad`. Competitor exchange events are excluded from candidates (partnership protection) |
+| Processing (3-step priority) | 1) (WOOX-included event branching runs regardless of any visibility flag) 2) WOOX Pro's own event is registered active in the Admin → `eventType=woox_event` (**absolute priority**: WOOX Pro takes priority even if a concurrent withdrawal has another exchange's event) 3) If none, TetherMax WOOX Pro Onboarding Event active → `eventType=onboarding_event` 4) If neither, `eventType=house_ad`. Competitor exchange events are excluded from candidates (partnership protection) |
 | Output Fields | `case`="woox_pro_included", `eventType` (`woox_event`/`onboarding_event`/`house_ad`). Event details such as banner image·copy reuse existing event Admin data (separate lookup) |
 | Exception Handling | When `active=false`, reverts to the **original base logic (show 1 randomly selected ongoing exchange event)** without promotion event branching. `house_ad` is the tier-3 content while the promotion is active, so it is distinguished from the revert target (original base) on termination |
 | Related Screen | S1 (Withdrawal Completion Screen) |
@@ -223,7 +224,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 |---|---|
 | Description | Calculates the Monthly Estimated Cashback (§2.5) of the current exchange and WOOX Pro respectively using the user's input conditions, and returns the comparison result on a Total Saving basis |
 | Input | `exchange` (current exchange), `balance`, `leverage`, `makerRatio`, `takerRatio` (sum=100), `dailyTradeFrequency` (TIME mapping, §2.5) |
-| Processing | 1) Pre-check `active` via F-005 2) Calculate `actualFeePaid`·`Monthly Estimated Cashback` (0.7 applied) with the current exchange parameters 3) Substitute WOOX Pro parameters (Discount Rate 0·Payback Rate 80%·0.7) into the same input to calculate the WOOX Pro value 4) Adverse-case decision using the **preview-specific** Total Saving Rate (§2.2): other exchange ≥ WOOX Pro → `visible=false` (§1.4) 5) If the leverage·product is unsupported by WOOX Pro, `visible=false` 6) If neither adverse nor unsupported, derive the net cost difference on a Total Saving basis as `savingAmount` (0.7 applied) 7) `savingPercentPoint` is separately calculated as the **nominal** Total Saving Rate difference (§2.3, 0.7 not applied) |
+| Processing | 1) Check the backoffice `s2Compare` flag (if OFF, not shown, §1.1) 2) Calculate `actualFeePaid`·`Monthly Estimated Cashback` (0.7 applied) with the current exchange parameters 3) Substitute WOOX Pro parameters (Discount Rate 0·Payback Rate 80%·0.7) into the same input to calculate the WOOX Pro value 4) Adverse-case decision using the **preview-specific** Total Saving Rate (§2.2): other exchange ≥ WOOX Pro → `visible=false` (§1.4) 5) If the leverage·product is unsupported by WOOX Pro, `visible=false` 6) If neither adverse nor unsupported, derive the net cost difference on a Total Saving basis as `savingAmount` (0.7 applied) 7) `savingPercentPoint` is separately calculated as the **nominal** Total Saving Rate difference (§2.3, 0.7 not applied) |
 | Output Fields | `visible` (bool), `currentExchangeEstimate`, `wooxProEstimate` (each Monthly Estimated Cashback, 0.7-applied value·raw data not included), `savingAmount` (USDT, 0.7 applied), `savingPercentPoint` (nominal %p) |
 | Exception Handling | `exchange`=WOOX Pro not being called by FE is the default contract (REQ-010), but the server also defensively returns `visible=false`. `makerRatio+takerRatio≠100` or required field missing → 400. Nonexistent `exchange` → 404. Calculation failure → 500 (however, deployment prohibited if the OI-10 bug is not fixed) |
 | Related Screen | S2 (Cashback Preview Result Page) |
@@ -236,22 +237,22 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 |---|---|
 | Description | Determines the exposure status and copy i18n key of the Travel Rule Integration Banner at 5 positions |
 | Input | Screen-entry request (position-agnostic, common decision), user locale (copy rendered by FE) |
-| Processing | 1) Query `active` via F-005 2) If active, return `visible=true` + i18n key (e.g., `promo.travelrule.badge`) 3) Pre-login requests (S3·S4) also use the same decision without a user identifier (session-agnostic, REQ-019) |
+| Processing | 1) Check the per-position backoffice flag (#2=`s1Banner`, #1=`s2Banner`, #3·#4·#5=`loginBanners`) 2) If ON, return `visible=true` + i18n key (e.g., `promo.travelrule.badge`). **Navigates to WOOX Pro detail on click** (OI-06 URL) 3) Pre-login requests (S3·S4) also use the same decision without a user identifier (session-agnostic, REQ-019) |
 | Output Fields | `active` (bool, API-001) + `travelRuleBanner.i18nKey`. (Logo images are not returned via API — design hardcoded, REQ-017) |
 | Exception Handling | When `active=false`, returns the not-displayed value. On status-query failure, safely treated as `active=false` per the F-005 rule |
 | Related Screen | S1~S5 (for App, only S1·S2 apply, see §FE Platform Matrix) |
 | Related API | GET /api/promo/status (API-001, shared with F-005) |
 | Requirements | REQ-016, 019 |
 
-### F-005. Promotion Active/Termination Decision and Bulk Rollback
+### F-005. Visibility Control State (Backoffice On/Off)
 
 | Item | Content |
 |---|---|
-| Description | Decides the overall promotion active/inactive state by a single criterion and provides the gate commonly consumed by F-001~F-004 |
+| Description | Provides the 5 per-area backoffice on/off flags. F-001·F-003·F-004 consume their own area's flag. **(2026-07-07 policy: D+30 · 2-WOOX-event gate abolished, §1.1)** |
 | Input | None (server internal state) — WOOX Pro onboarding reference date, Admin termination status of the two WOOX Pro events |
-| Processing | `active = (current time ≤ onboarding reference date + 30 days) AND (both WOOX Pro events not terminated)`. If even one is terminated, `active=false` immediately (OR). It only queries the existing events' termination status; there is no new termination UI (§1.1, REQ-020·022) |
-| Output Fields | `active` (bool) — single value common to F-001~F-004 |
-| Exception Handling | When the decision is impossible, such as a termination-status query failure, **safely `active=false`** (fallback in the direction of not displaying the nudge on failure). API-001 in this case prioritizes an `active:false` response over a 500 |
+| Processing | Returns the 5 flags stored in the backoffice (`s1Feedback`·`s1Banner`·`s2Compare`·`s2Banner`·`loginBanners`). No D+30 · event-dependency determination |
+| Output Fields | `s1Feedback`·`s1Banner`·`s2Compare`·`s2Banner`·`loginBanners` (each bool) — per-area independent |
+| Exception Handling | On settings-query failure, safely treat **all flags as OFF** (fallback toward not showing the nudge) |
 | Related Screen | All of S1~S5 (common gate) |
 | Related API | GET /api/promo/status (API-001) |
 | Requirements | REQ-020~023 |
@@ -262,7 +263,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 
 | Situation | Decision/Response | Result |
 |---|---|---|
-| Promotion inactive (`active=false`) | F-001/F-003 `visible=false`, F-002 reverts to original base logic (1 randomly selected ongoing exchange event, not `house_ad`), F-004 not displayed | base logic, 3 features together |
+| Backoffice flag OFF (per area) | Only that area hidden: `s1Feedback`OFF->feedback base, `s2Compare`OFF->comparison not inserted, `s1Banner`/`s2Banner`/`loginBanners`OFF->that banner hidden | per-area independent (partial control) |
 | Adverse case (other Total Saving Rate ≥ WOOX Pro) | 200 OK + `visible=false` | Not displayed (not an error) |
 | WOOX Pro unsupported (leverage/product, F-003) | 200 OK + `visible=false` | Comparison Card not inserted |
 | `exchange`=WOOX Pro (F-003) | 200 OK + `visible=false` (defensive) | FE does not call in the first place |

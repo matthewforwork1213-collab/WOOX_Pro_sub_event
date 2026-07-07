@@ -58,7 +58,7 @@
 - Adverse case prevention: **Not displayed if the other exchange's Total Saving Rate ≥ WOOX Pro's** (displayed only when WOOX Pro is strictly greater).
 - Minimum threshold of 1 USDT (positive values under 1 are shown as 1 USDT; 0/negative values follow base logic).
 - CTA: "View WOOX Pro Fee Comparison" → WOOX Pro exchange detail page.
-- On promotion termination (common gate: either of the 2 WOOX Pro events terminated OR D+30): reverts to the existing ad logic (Virtual Feedback not displayed).
+- When backoffice 'S1 WOOX Pro Virtual Feedback' is OFF: reverts to the existing ad logic (Virtual Feedback not displayed). (2026-07-07: D+30 · 2-WOOX-event gate abolished)
 
 **Change B — Travel Rule Banner #2**: Inserted **outside the bottom** of the result card area.
 
@@ -78,7 +78,7 @@
 - Basis disclosure: lowercase "standard user/base tier basis" note at the bottom of the card.
 - Collapse **provided** (OI-05 finalized) — draft needs both expanded/collapsed states. No forced close (X) button.
 - Display frequency: always (when conditions are met). No session limit.
-- On promotion termination (common gate): comparison card not inserted.
+- When backoffice 'S2 WOOX Pro comparison' is OFF: comparison card not inserted. (2026-07-07: D+30 · 2-WOOX-event gate abolished)
 
 **Change B — Travel Rule Banner #1**: Inserted at the **bottom** of the result page (below the Inline Comparison Card).
 
@@ -89,7 +89,7 @@
 | S3 Login Page | PC | **Top area** of the page |
 | S4 Pre-Login Menu | MO (Web) | **Directly below** the login/sign-up buttons |
 
-- Since this is pre-login, no user information is needed — displayed based **only on the global promotion active status (common gate)**.
+- Since this is pre-login, no user information is needed — displayed based **only on the backoffice 'login 3-page Travel Rule' on/off** (#3·#4·#5 collectively).
 
 ### S5. My Page (Travel Rule Banner #5, post-login)
 
@@ -108,7 +108,7 @@
 | Order | Logo (front) → Text (back), fixed across all languages |
 | Style | Understated badge (not over-emphasized) |
 | Click | **Navigates to the WOOX Pro exchange detail page on click** (CTA URL = admin onboarding-registered value, OI-06). Feature 3 revised (2026-07-07). ⚠️ The OI-09 legal risk acceptance was premised on a static informational banner and must be re-confirmed |
-| Display | Promotion-limited (common termination gate: 2 WOOX Pro events ended OR + D+30). All 5 locations removed upon termination |
+| Display | **Controlled by backoffice Travel Rule banner on/off** (#1·#2 individually, #3·#4·#5 collectively). 2026-07-07: D+30 · 2-WOOX-event gate abolished. ⚠️ Abolishing D+30 conflicts with OI-07 — awaiting C-level re-approval |
 
 ---
 
@@ -127,6 +127,6 @@
 
 ## 6. Reference: Confirmed / Open Items
 
-**Confirmed**: Definitions of the 3 features, Feature 1 reverse-calculation model (Commission Rate not used, Payback data source = user UID table batch once daily at 20:00 KST), **Feature 2 calculation formula = existing cashback engine's Monthly Estimated Cashback (Maker/Taker weighted by fee rate tier, single Payback Rate value, Correction Factor = fixed constant of 0.7)**, Feature 2 inline conversion + **collapse provided**, Feature 3 banner (hardcoded logos · KO/EN copy), minimum threshold of 1 USDT, USDT-only + multilingual + %p, CTA (WOOX Pro exchange detail page), **multiple UIDs = single total summing only positive values (no listing even when numerous)**, **adverse case prevention = based on Total Saving Rate (not displayed if other's ≥ WOOX Pro's)**, **promotion termination = existing 2 WOOX Pro events' termination button OR + D+30, batch rollback of all 3 features (not new development)**, **start date = WOOX Pro exchange onboarding point**, **comparison target = all onboarded, display-enabled (Y) exchanges**, **sign-up URL = value registered in Admin**, **duration = launch + 30 days only (no permanent adoption)**, **display method = finalized on a Total Saving basis (OI-08, Payback Rate basis discarded)**, **%p definition = Nominal Total Saving Rate (WOOX Pro) − Nominal Total Saving Rate (current exchange), Correction Factor not applied, common to Feature 1·2 (2026-07-03)**.
+**Confirmed**: Definitions of the 3 features, Feature 1 reverse-calculation model (Commission Rate not used, Payback data source = user UID table batch once daily at 20:00 KST), **Feature 2 calculation formula = existing cashback engine's Monthly Estimated Cashback (Maker/Taker weighted by fee rate tier, single Payback Rate value, Correction Factor = fixed constant of 0.7)**, Feature 2 inline conversion + **collapse provided**, Feature 3 banner (hardcoded logos · KO/EN copy), minimum threshold of 1 USDT, USDT-only + multilingual + %p, CTA (WOOX Pro exchange detail page), **multiple UIDs = single total summing only positive values (no listing even when numerous)**, **adverse case prevention = based on Total Saving Rate (not displayed if other's ≥ WOOX Pro's)**, **visibility control = 5 per-area backoffice on/off (partial control allowed, changed 2026-07-07 — the prior 2-WOOX-event OR + D+30 batch rollback is abolished, ⚠️ conflicts with OI-07)**, **start date = WOOX Pro exchange onboarding point**, **comparison target = all onboarded, display-enabled (Y) exchanges**, **sign-up URL = value registered in Admin**, **duration = ⚠️ D+30 abolished → controlled by backoffice on/off (conflicts with OI-07 · awaiting C-level re-approval)**, **display method = finalized on a Total Saving basis (OI-08, Payback Rate basis discarded)**, **%p definition = Nominal Total Saving Rate (WOOX Pro) − Nominal Total Saving Rate (current exchange), Correction Factor not applied, common to Feature 1·2 (2026-07-03)**.
 
 **Open (OI)**: **OI-10 Admin double-multiplication bug fix (separate track, prerequisite before launch)** · OI-01 Deployment environment · Logo image assets (design to secure). (OI-08 has been finalized on a Total Saving basis)

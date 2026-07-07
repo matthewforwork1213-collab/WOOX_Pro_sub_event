@@ -53,7 +53,7 @@
 |---|---|
 | Method | GET |
 | URL | /api/promo/status |
-| 설명 | 프로모션 전체의 활성/비활성 여부를 조회한다. F-001~F-004가 공통으로 참조하는 게이트이며, 트레블룰 배너(F-004)의 노출 판정에도 사용된다. 로그인 여부와 무관하게 호출 가능하다(REQ-019) |
+| 설명 | 백오피스 영역별 노출 on/off 5개를 조회한다. F-001·F-003·F-004가 자기 영역 플래그를 소비한다. 로그인 여부와 무관하게 호출 가능하다(REQ-019). **(2026-07-07 정책: D+30·2개 WOOX 이벤트 게이트 폐지 → 영역별 on/off)** |
 
 **Request**
 
@@ -67,7 +67,11 @@
 {
   "status": "success",
   "data": {
-    "active": true,
+    "s1Feedback": true,
+    "s1Banner": true,
+    "s2Compare": true,
+    "s2Banner": true,
+    "loginBanners": true,
     "travelRuleBanner": {
       "i18nKey": "promo.travelrule.badge"
     }
@@ -75,14 +79,16 @@
 }
 ```
 
-- `active`: 프로모션 활성 여부. false면 F-001·F-002는 base 로직, F-003·F-004는 비노출로 처리 (REQ-020~022)
+- `s1Feedback`: 출금완료 WOOX Pro 가상 피드백(F-001) 노출 여부. false면 F-001은 base 로직
+- `s1Banner`·`s2Banner`·`loginBanners`: 트레블룰 배너(#2 / #1 / #3·#4·#5 일괄) 노출 여부 (F-004)
+- `s2Compare`: 캐시백 프리뷰 WOOX Pro 비교(F-003) 노출 여부. false면 비교 카드 미삽입 (REQ-020~022)
 - `travelRuleBanner.i18nKey`: 배너 문구의 i18n 키(로고 이미지는 디자인 하드코딩이므로 API로 내려주지 않음, REQ-017)
 
 **에러 Response**
 
 | 상태 코드 | 에러 코드 | 조건 |
 |---|---|---|
-| 500 | INTERNAL_ERROR | 이벤트 종료 상태 조회 실패 등 판정 불가 — 이 경우 서버는 에러 대신 `active: false`로 안전하게 응답하는 것을 우선한다 (기능명세서_BE F-005 예외 처리) |
+| 500 | INTERNAL_ERROR | 설정 조회 실패 등 판정 불가 — 이 경우 서버는 에러 대신 **5개 플래그를 전부 false**로 안전하게 응답하는 것을 우선한다 (기능명세서_BE F-005 예외 처리) |
 
 ---
 
