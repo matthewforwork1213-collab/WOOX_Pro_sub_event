@@ -92,17 +92,17 @@ Triggered at the moment the user enters the **[Result Page]** after entering the
 
 **Purpose**
 
-Display that WOOX Pro is **an exchange integrated with Bithumb via Travel Rule**, delivering a regulatory-compliance/trust signal to domestic users and lowering resistance to converting to WOOX Pro. (Not a Nudge, but a **static trust banner**)
+Display that WOOX Pro is **an exchange integrated with Bithumb via Travel Rule**, delivering a regulatory-compliance/trust signal to domestic users and lowering resistance to converting to WOOX Pro. (A trust-signal banner — **navigates to the WOOX Pro exchange detail on click**, Feature 3 revised 2026-07-07)
 
 **Banner Specification**
 
 | Item | Content |
 |------|------|
-| **Composition** | `[Bithumb logo]` `[WOOX Pro logo]` + copy (two logos first, copy after). Copy KO "트레블룰 연동" / EN "Travel Rule Integration" |
+| **Composition** | `[Bithumb logo]` ⇄ `[WOOX Pro logo]` + copy (two logos first, copy after). **A left-right arrow (⇄) between the logos.** Copy KO "트레블룰 연동" / EN "Travel Rule Integration" |
 | **Asset Rule** | Both logos (Bithumb, WOOX Pro) are **hardcoded as images in the design** (not Admin-loaded/dynamically injected). The trailing copy ("Travel Rule Integration") is **multilingual text** (images prohibited) |
 | **Order** | The order Logo (first) → Text (after) is **fixed and common across all languages** |
 | **Style** | **Understated** — badge form without excessive emphasis |
-| **Click Behavior** | **None** (static banner with no navigation/link) |
+| **Click Behavior** | **Navigates to the WOOX Pro exchange detail page on click** (CTA URL = admin onboarding-registered value, OI-06). Feature 3 revised (2026-07-07) — changed from the previous "static, no click." ⚠️ The OI-09 legal risk acceptance was premised on a static informational banner and must be re-confirmed |
 | **Exposure Policy** | **Promotion-limited** — subordinate to the common termination gate (2 WOOX Pro event terminations OR + D+30). All 5 positions removed upon termination. **Pre-login screens (#3, #4) are displayed based solely on global Promotion Active status, regardless of user session** |
 
 **Exposure Positions (5)**
@@ -355,7 +355,7 @@ Beyond automatic expiration (D+30), the promotion can also be terminated early v
 
 [Travel Rule Trust Banner — Feature 3 (5 positions)]
 │
-├── Promotion active → Display banner at 5 positions (no click navigation)
+├── Promotion active → Display banner at 5 positions (navigates to WOOX Pro detail on click)
 └── Promotion terminated → Remove banner from all 5 positions
 
 [Promotion Active Determination — Common Precheck Before Entering Each Feature]
@@ -386,7 +386,7 @@ Beyond automatic expiration (D+30), the promotion can also be terminated early v
 - [x] Simultaneous withdrawal across multiple exchanges (UIDs) → sum only UIDs that are not adverse cases and are positive, **displayed as a single total amount** (multiple UIDs also not listed), "based on N exchanges" caption
 - [x] Definition of "TetherMax-type event" → TetherMax WOOX Pro Onboarding Event
 - [x] Promotion termination → **existing 2 WOOX Pro event termination buttons (OR, applies even if only 1 is clicked) + D+30**. Upon termination, **all 3 features are rolled back together in a batch** (no partial termination). Not new development (§3-3)
-- [x] Feature 3 Travel Rule trust banner → **promotion-limited** (common termination gate above), 5 positions, logo = hardcoded image · copy = translated text, no click navigation
+- [x] Feature 3 Travel Rule banner → **promotion-limited** (common termination gate above), 5 positions, logo = hardcoded image (⇄ between logos) · copy = translated text, **navigates to WOOX Pro detail on click** (Feature 3 revised 2026-07-07, ⚠️ OI-09 legal re-confirmation)
 - [x] Banner copy → KO "트레블룰 연동" / EN "Travel Rule Integration" (standard localization for other languages)
 - [x] Promotion start date → **the point of WOOX Pro exchange onboarding** (globally fixed date)
 - [x] Comparison target exchanges → **all exchanges that have completed onboarding & have exposure = Y** (dynamic)
@@ -441,7 +441,7 @@ To allow developers to begin work without omission on a **page/feature basis**, 
 | Category | Task |
 |------|------|
 | BE | Banner exposure determination based on the common promotion-active gate (including pre-login screens, **global determination regardless of user session**) |
-| FE | Banner component (**hardcoded logos** for Bithumb and WOOX Pro + KO "트레블룰 연동"/EN "Travel Rule Integration", logo first · text after fixed order, understated badge style, **no click**) · insert at 5 positions: #1 bottom of preview (S2) · #2 outside bottom of withdrawal card (S1) · #3 below pre-login button on MO (S4) · #4 top of PC login page (S3) · #5 below member ID on My Page (S5) · remove from all 5 places when the common termination gate fires |
+| FE | Banner component (**hardcoded logos** for Bithumb and WOOX Pro with a ⇄ arrow between them + KO "트레블룰 연동"/EN "Travel Rule Integration", logo first · text after fixed order, understated badge style, **navigates to WOOX Pro detail on click**, OI-06 URL) · insert at 5 positions: #1 bottom of preview (S2) · #2 outside bottom of withdrawal card (S1) · #3 below pre-login button on MO (S4) · #4 top of PC login page (S3) · #5 below member ID on My Page (S5) · remove from all 5 places when the common termination gate fires |
 | Target | S1, S2 = PC · MO · App (webview) / S3~S5 = Web (PC/MO) only (app-native areas excluded) |
 
 ### 6-4. Parallel Development · Termination Unit

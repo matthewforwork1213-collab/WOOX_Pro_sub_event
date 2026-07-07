@@ -102,12 +102,12 @@
 
 | Item | Content |
 |---|---|
-| Composition | `[Bithumb logo]` `[WOOX Pro logo]` + Travel Rule Integration copy |
+| Composition | `[Bithumb logo]` ⇄ `[WOOX Pro logo]` + Travel Rule Integration copy (left-right arrow ⇄ between the logos) |
 | Copy (Text) | KO: **"트레블룰 연동"** / EN: **"Travel Rule Integration"** (other languages follow standard localization) |
 | Assets | Both logos = images, **hardcoded in design**. Copy is multilingual text (no images) |
 | Order | Logo (front) → Text (back), fixed across all languages |
 | Style | Understated badge (not over-emphasized) |
-| Click | None (static, no link) |
+| Click | **Navigates to the WOOX Pro exchange detail page on click** (CTA URL = admin onboarding-registered value, OI-06). Feature 3 revised (2026-07-07). ⚠️ The OI-09 legal risk acceptance was premised on a static informational banner and must be re-confirmed |
 | Display | Promotion-limited (common termination gate: 2 WOOX Pro events ended OR + D+30). All 5 locations removed upon termination |
 
 ---

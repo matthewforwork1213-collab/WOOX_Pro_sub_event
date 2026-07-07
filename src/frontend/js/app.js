@@ -66,12 +66,17 @@
   function status() { return API.getStatus(state.env).data; }
 
   // ---------------- 트레블룰 배너 (기능 3) ----------------
-  function banner(pos) {
+  // 개정: 클릭 시 WOOX Pro 거래소 상세로 이동(기존 정적·클릭없음에서 변경). 로고 사이 좌우 화살표(⇄).
+  // variant: '' 기본 pill | 'block' 별도 블록(모바일 로그인 전) | 'left' 좌측정렬 풀폭(마이페이지)
+  function banner(pos, variant) {
     if (!status().active) return '';
-    return '<div class="tr-wrap"><div class="tr-banner" title="트레블룰 배너 위치 #' + pos + ' (정적·클릭 없음)">' +
-      '<span class="logos"><span class="tr-logo bithumb">Bithumb</span><span class="tr-logo woox">WOOX Pro</span></span>' +
+    var cls = variant ? ' ' + variant : '';
+    var wrapFull = (variant === 'block' || variant === 'left') ? ' full' : '';
+    return '<div class="tr-wrap' + wrapFull + '"><div class="tr-banner' + cls + '" data-action="tr-click" title="WOOX Pro 거래소 상세로 이동 (배너 #' + pos + ')">' +
+      '<span class="logos"><span class="tr-logo bithumb">Bithumb</span><span class="tr-arrow">⇄</span><span class="tr-logo woox">WOOX Pro</span></span>' +
       '<span class="txt">' + T('Travel Rule Integration') + '</span></div></div>';
   }
+  function bindBanner() { onClick('[data-action="tr-click"]', function () { openWooxDetail(); }); }
 
   // ---------------- 공통 조각 ----------------
   function statusbar() { return '<div class="statusbar"><span>9:41</span><span class="sig">▪▪▪ &#128246; &#128267;</span></div>'; }
@@ -157,6 +162,7 @@
       if (ty === 'woox_event' || ty === 'onboarding_event') openWooxDetail(); else openExchangeEvent();
     });
     onClick('[data-action="event-close"]', function () { toast('이벤트를 닫았습니다 (프로토타입)'); });
+    bindBanner();
   }
 
   // ======================================================================
@@ -260,6 +266,7 @@
     onClick('[data-action="s2-start"]', function () { openWooxDetail(); });
     onClick('[data-action="s2-start-current"]', function (e) { toast(e.currentTarget.getAttribute('data-ex') + ' 캐시백 시작 (기존 흐름·프로토타입)'); });
     onClick('[data-action="s2-reset"]', function () { toast('입력 초기화 (프로토타입)'); });
+    bindBanner();
   }
 
   // ======================================================================
@@ -276,12 +283,13 @@
   function renderLogin() {
     var body = '<div class="desktop">' + siteNav() +
       '<div style="padding:40px 20px">' +
-      banner(4) +
       '<div class="h1">' + T('Hi, welcome back!') + '</div>' +
       '<div class="form">' +
       '<div class="card" style="background:var(--surface-2);border:none;display:flex;align-items:center;gap:12px">' +
       '<div><div class="muted tiny">' + T('Log in now to complete missions') + '</div><b style="color:var(--brand)">' + T('to earn more USDT') + '</b></div></div>' +
-      '<div class="sp16"></div>' +
+      // 배너 #4 (요청 위치: 미션 카드와 이메일 입력 사이)
+      banner(4) +
+      '<div class="sp8"></div>' +
       '<input class="input" id="lg-email" placeholder="' + T('Email') + '" />' +
       '<div id="lg-email-err"></div><div class="sp12"></div>' +
       '<input class="input" id="lg-pw" type="password" placeholder="' + T('Password') + '" />' +
@@ -296,42 +304,12 @@
     wireAuth();
   }
 
-  function renderSignup() {
-    var body = '<div class="desktop">' + siteNav() +
-      '<div style="padding:40px 20px">' +
-      '<div class="h1">' + T('Create Account') + '</div>' +
-      '<div class="center muted">' + T("We'll send you a code to verify this email") + '</div><div class="sp16"></div>' +
-      '<div class="form">' +
-      '<div class="card" style="background:var(--surface-2);border:none">' + T('Sign up and trade to earn rewards ') + '<b style="color:var(--brand)">' + T('up to 100 USDT') + '</b> 🎁</div>' +
-      '<div class="sp16"></div>' +
-      '<input class="input" id="su-email" placeholder="' + T('Email') + '" />' +
-      '<div id="su-email-err"></div><div class="sp12"></div>' +
-      '<input class="input" id="su-pw" type="password" placeholder="' + T('Password') + '" />' +
-      '<div id="su-pw-err"></div><div class="sp12"></div>' +
-      '<input class="input" id="su-ref" placeholder="' + T('Referral Code (optional)') + '" />' +
-      '<div class="sp16"></div>' +
-      '<label class="checkbox-row"><input type="checkbox" id="su-terms" /> <span>' + T('I have read and agree to the ') + '<span class="link">' + T('Terms of Use') + '</span> ' + (T('and')) + ' <span class="link">' + T('Privacy Policy') + '</span></span></label>' +
-      '<div class="sp16"></div>' +
-      '<button class="btn btn-primary" id="su-btn" data-action="signup-submit" disabled>' + T('Continue') + '</button>' +
-      '<div class="sp16"></div><div class="center">' + T('Already have an account? ') + '<span class="link" data-action="go-login">' + T('Log in') + '</span></div>' +
-      '</div></div></div>';
-    mountDesktop(body);
-    wireAuth();
-    ['su-email', 'su-pw', 'su-terms'].forEach(function (id) {
-      var e = document.getElementById(id);
-      e.addEventListener('input', signupValidate); e.addEventListener('change', signupValidate);
-    });
-  }
-
   function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
-  function signupValidate() {
-    var ok = isEmail($('#su-email').value.trim()) && $('#su-pw').value.length >= 8 && $('#su-terms').checked;
-    $('#su-btn').disabled = !ok;
-  }
 
   function wireAuth() {
+    bindBanner();
     onClick('[data-action="go-login"]', function () { go('login'); });
-    onClick('[data-action="go-signup"]', function () { go('signup'); });
+    onClick('[data-action="go-signup"]', function () { toast('회원가입 화면은 이 프로모션 변경 대상이 아닙니다 (프로토타입 범위 외)'); });
     onClick('[data-action="forgot"]', function () {
       modal('<div class="modal-title">' + T('Reset your password') + '</div><div class="modal-sub">' + T("We'll email a reset link if the account exists.") + '</div><div class="sp16"></div><input class="input" placeholder="' + T('Email') + '" /><div class="sp16"></div><button class="btn btn-primary" data-action="forgot-send">' + T('Send reset link') + '</button>', { center: true });
       onClick('[data-action="forgot-send"]', function () { closeModal(); toast('비밀번호 재설정 링크를 보냈습니다(있는 계정일 경우).'); });
@@ -345,15 +323,6 @@
       if (bad) return;
       if (email === 'wrong@test.com' || pw === 'wrong') { setErr('lg-cred-err', T('Email or password is incorrect.')); return; }
       state.auth.loggedIn = true; toast('로그인 성공'); go('mypage');
-    });
-    onClick('[data-action="signup-submit"]', function () {
-      clearErr(['su-email-err', 'su-pw-err']);
-      var email = $('#su-email').value.trim(), pw = $('#su-pw').value, bad = false;
-      if (!isEmail(email)) { setErr('su-email-err', T('Invalid email format.')); markErr('su-email'); bad = true; }
-      if (pw.length < 8) { setErr('su-pw-err', T('Password must be at least 8 characters.')); markErr('su-pw'); bad = true; }
-      if (bad) return;
-      modal('<div class="modal-title">' + T('Verify your email') + '</div><div class="modal-sub">We sent a 6-digit code to ' + email + '</div><div class="sp16"></div><input class="input" placeholder="6-digit code" maxlength="6" /><div class="sp16"></div><button class="btn btn-primary" data-action="verify-ok">' + T('Verify & Continue') + '</button>', { center: true });
-      onClick('[data-action="verify-ok"]', function () { closeModal(); state.auth.loggedIn = true; toast('가입 완료'); go('mypage'); });
     });
   }
 
@@ -374,8 +343,9 @@
       '<div class="btn-row" style="margin-top:14px">' +
       '<button class="btn btn-ghost dark" data-action="go-login">' + T('Log In') + '</button>' +
       '<button class="btn btn-primary" data-action="go-signup">' + T('Sign Up') + '</button></div>' +
-      banner(3) +
       '</div>' +
+      // 배너 #3 — 익스체인지~포인트처럼 별도 블록(버튼형)으로 분리
+      banner(3, 'block') +
       '<div class="m-card">' +
       menuRow('⇅', T('Exchanges')) + menuRow('▤', T('Events')) + menuRow('✦', T('Benefits')) +
       menuRow('▦', T('Cashback Preview')) + menuRow('◈', T('Point')) +
@@ -390,8 +360,9 @@
       '</div>' + phoneClose();
     mountRaw(b);
     onClick('[data-action="go-login"]', function () { go('login'); });
-    onClick('[data-action="go-signup"]', function () { go('signup'); });
+    onClick('[data-action="go-signup"]', function () { toast('회원가입 화면은 이 프로모션 변경 대상이 아닙니다 (프로토타입 범위 외)'); });
     onClick('[data-action="mp-close"]', function () { go('s1'); });
+    bindBanner();
   }
   function menuRow(ic, lb) { return '<div class="m-row"><span class="ic">' + ic + '</span><span>' + lb + '</span></div>'; }
 
@@ -427,7 +398,7 @@
       '<div class="pm-avatar">🐯</div>' +
       '<div class="pm-email">abc****@live.com</div>' +
       '<div class="pm-mid">' + T('Member ID: ') + '10047039 ⧉</div>' +
-      banner(5) +
+      banner(5, 'left') +
       '<div class="pm-grid">' +
       pmCell('◪', T('Cashback Summary')) + pmCell('✉', T('Invite Friends')) +
       pmCell('▥', T('Cashback Ranking')) + pmCell('★', T('My Coupons')) +
@@ -438,6 +409,7 @@
       '<div class="pm-list"><div class="row" data-action="logout">⇥ &nbsp; ' + T('Log Out') + '</div></div>' +
       '</div></div>';
     mountDesktop(body);
+    bindBanner();
     onClick('[data-action="mp-dim"]', function () { toast('드로어를 닫았습니다 (프로토타입 · 마이페이지 유지)'); });
     onClick('[data-action="logout"]', function () {
       modal('<div class="modal-title">' + T('Log out?') + '</div><div class="modal-sub">' + T('You can log back in anytime.') + '</div><div class="sp16"></div><div class="btn-row"><button class="btn btn-ghost" data-action="lo-cancel">' + T('Cancel') + '</button><button class="btn btn-primary" data-action="lo-ok">' + T('Log Out') + '</button></div>', { center: true });
@@ -491,7 +463,6 @@
       case 's1': renderS1(); break;
       case 's2': renderS2(); break;
       case 'login': renderLogin(); break;
-      case 'signup': renderSignup(); break;
       case 'mweb': renderMweb(); break;
       case 'mypage': renderMypage(); break;
     }

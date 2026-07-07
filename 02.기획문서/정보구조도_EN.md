@@ -103,7 +103,7 @@ flowchart TD
     CheckApp -->|Yes| NoBanner[Banner Not Shown - Native Area]
     CheckApp -->|No| CheckPromo{Promotion Active?}
     CheckPromo -->|No| NoBanner2[Banner Not Shown]
-    CheckPromo -->|Yes| ShowBanner[Show Travel Rule Banner - No Click Navigation]
+    CheckPromo -->|Yes| ShowBanner[Show Travel Rule Banner - Navigate to WOOX Pro Detail on Click]
 
     NoBanner --> End([Screen Displayed])
     NoBanner2 --> End

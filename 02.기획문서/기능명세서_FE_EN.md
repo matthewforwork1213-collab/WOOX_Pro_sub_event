@@ -125,10 +125,10 @@ Each feature detail (§2) references this section rather than repeating it.
 
 | Item | Content |
 |---|---|
-| Description | During the promotion active period, a static Travel Rule Integration Banner is shown in 5 locations |
-| Input | Screen entry event (each of the 5 screens) — no user input, and no behavior on click either (static) |
-| Processing | 1) On entry, query the promotion active state (F-005) 2) If active, render the banner component — logo (`[Bithumb logo]` `[WOOX Pro logo]`, design-hardcoded image) + text (i18n text, per locale: KO "트레블룰 연동" / EN "Travel Rule Integration") 3) Pre-login screens (#3·#4) also use identical logic regardless of session (REQ-019) |
-| Banner Composition Rule | Order fixed as **logo (front) → text (back)** (common across all languages, REQ-017). Logo is a hardcoded image (not admin-loaded), text is multilingual text (image prohibited). **Restrained badge** style. **No click navigation** (static, REQ-018) |
+| Description | During the promotion active period, a Travel Rule Integration Banner is shown in 5 locations |
+| Input | Screen entry event (each of the 5 screens) — no user input; on click it navigates to the WOOX Pro exchange detail |
+| Processing | 1) On entry, query the promotion active state (F-005) 2) If active, render the banner component — logo (`[Bithumb logo]` ⇄ `[WOOX Pro logo]`, design-hardcoded image · left-right arrow ⇄ between the logos) + text (i18n text, per locale: KO "트레블룰 연동" / EN "Travel Rule Integration") 3) Pre-login screens (#3·#4) also use identical logic regardless of session (REQ-019) 4) **On banner click, navigate to the WOOX Pro exchange detail page** (CTA URL = admin onboarding-registered value, OI-06) |
+| Banner Composition Rule | Order fixed as **logo (front, ⇄ between) → text (back)** (common across all languages, REQ-017). Logo is a hardcoded image (not admin-loaded), text is multilingual text (image prohibited). **Restrained badge** style. **Navigates to WOOX Pro detail on click** (REQ-018 revised 2026-07-07 — changed from the previous static/no-click. ⚠️ OI-09 legal re-confirmation needed) |
 | 5 Locations | #1 Below Cashback Preview Result (S2) · #2 Outside below Withdrawal Result Card (S1) · #3 Below MO pre-login button (S4) · #4 Top of PC Login Page (S3) · #5 Below Member ID on My Page (S5) |
 | Exception Handling | When promotion is inactive, all 5 locations are not shown. In the App environment, only S1·S2 are rendered; S3~S5 are native and thus excluded from rendering targets (§1.2) |
 | Related Screens | S1·S2 — PC·MO·App / S3·S4·S5 — Web (PC/MO) only |
