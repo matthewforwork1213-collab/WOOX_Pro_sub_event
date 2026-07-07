@@ -135,6 +135,8 @@
     'Travel Rule': '트레블룰',
     'Bithumb integrated': '빗썸 연동',
     'Start with WOOX Pro ⧉': 'WOOX Pro로 시작 ⧉',
+    'Back': '뒤로',
+    'Sign Up for WOOX Pro': 'WOOX Pro 가입하기',
 
     // ---- 일반 모달 ----
     'Log out?': '로그아웃 할까요?',

@@ -12,6 +12,7 @@
   // ---------------- 전역 상태 ----------------
   var state = {
     screen: 's1',
+    prevScreen: 's1',
     env: { withinD30: true, event1Terminated: false, event2Terminated: false, simulateStatusError: false },
     s1: { mode: 'feedback', dismissed: false },
     s2: { exchange: 'bitget', mode: 'comparison', collapsed: false, oi10: false },
@@ -73,10 +74,11 @@
     var cls = variant ? ' ' + variant : '';
     var wrapFull = (variant === 'block' || variant === 'left') ? ' full' : '';
     return '<div class="tr-wrap' + wrapFull + '"><div class="tr-banner' + cls + '" data-action="tr-click" title="WOOX Pro 거래소 상세로 이동 (배너 #' + pos + ')">' +
-      '<span class="logos"><span class="tr-logo bithumb">Bithumb</span><span class="tr-arrow">⇄</span><span class="tr-logo woox">WOOX Pro</span></span>' +
+      '<span class="logos"><span class="tr-logo bithumb">Bithumb</span><span class="tr-arrow">↔</span><span class="tr-logo woox">WOOX Pro</span></span>' +
       '<span class="txt">' + T('Travel Rule Integration') + '</span></div></div>';
   }
-  function bindBanner() { onClick('[data-action="tr-click"]', function () { openWooxDetail(); }); }
+  function bindBanner() { onClick('[data-action="tr-click"]', gotoWoox); }
+  function gotoWoox() { state.prevScreen = state.screen; go('wooxdetail'); }
 
   // ---------------- 공통 조각 ----------------
   function statusbar() { return '<div class="statusbar"><span>9:41</span><span class="sig">▪▪▪ &#128246; &#128267;</span></div>'; }
@@ -156,10 +158,10 @@
   }
 
   function wireS1() {
-    onClick('[data-action="s1-compare"]', function () { openWooxDetail(); });
+    onClick('[data-action="s1-compare"]', gotoWoox);
     onClick('[data-action="event-learnmore"]', function (e) {
       var ty = e.currentTarget.getAttribute('data-type');
-      if (ty === 'woox_event' || ty === 'onboarding_event') openWooxDetail(); else openExchangeEvent();
+      if (ty === 'woox_event' || ty === 'onboarding_event') gotoWoox(); else openExchangeEvent();
     });
     onClick('[data-action="event-close"]', function () { toast('이벤트를 닫았습니다 (프로토타입)'); });
     bindBanner();
@@ -263,7 +265,7 @@
 
   function wireS2() {
     onClick('[data-action="s2-collapse"]', function () { state.s2.collapsed = !state.s2.collapsed; renderS2(); });
-    onClick('[data-action="s2-start"]', function () { openWooxDetail(); });
+    onClick('[data-action="s2-start"]', gotoWoox);
     onClick('[data-action="s2-start-current"]', function (e) { toast(e.currentTarget.getAttribute('data-ex') + ' 캐시백 시작 (기존 흐름·프로토타입)'); });
     onClick('[data-action="s2-reset"]', function () { toast('입력 초기화 (프로토타입)'); });
     bindBanner();
@@ -426,18 +428,26 @@
       '<button class="btn btn-primary ev-join">' + T('Join Now') + '</button></div></div>';
   }
 
-  // ---------------- WOOX Pro 상세(=CTA 목적지, OI-06) ----------------
-  function openWooxDetail() {
-    modal('<div class="center"><span class="tr-logo woox" style="height:26px;font-size:14px">WOOX Pro</span></div>' +
-      '<div class="modal-title" style="margin-top:12px">' + T('WOOX Pro — Lower fees, more cashback') + '</div>' +
-      '<div class="modal-sub">' + T('80% cashback on trading fees · Bithumb Travel Rule integrated') + '</div>' +
+  // ---------------- WOOX Pro 거래소 상세 페이지 (=CTA 목적지, OI-06) ----------------
+  // 트레블룰 배너/CTA 클릭 시 팝업이 아니라 이 페이지로 이동한다.
+  function renderWoox() {
+    var body = phoneOpen(false) +
+      '<div class="appbar"><span class="link" data-action="woox-back" style="text-decoration:none">‹ ' + T('Back') + '</span>' +
+      '<div class="brand" style="font-size:15px"><span class="inf">∞</span> WOOX Pro</div><span style="width:40px"></span></div>' +
+      '<div class="screen-pad">' +
+      '<div class="center"><div class="tr-logo woox" style="height:34px;font-size:16px;border-radius:8px;padding:0 14px;display:inline-flex">WOOX Pro</div>' +
+      '<div class="h1" style="margin-top:14px">' + T('WOOX Pro — Lower fees, more cashback') + '</div>' +
+      '<div class="muted">' + T('80% cashback on trading fees · Bithumb Travel Rule integrated') + '</div></div>' +
       '<div class="sp16"></div>' +
       '<div class="card"><div class="cmp-row"><span class="lbl">' + T('Cashback rate') + '</span><b class="cmp-win">80%</b></div>' +
       '<div class="cmp-row"><span class="lbl">' + T('Fee discount') + '</span><b>' + T('Applied at checkout') + '</b></div>' +
-      '<div class="cmp-row"><span class="lbl">' + T('Travel Rule') + '</span><b>' + T('Bithumb integrated') + '</b></div></div>' +
-      '<div class="sp16"></div><button class="btn btn-primary" data-action="woox-go">' + T('Start with WOOX Pro ⧉') + '</button>' +
-      '<div class="tiny muted center" style="margin-top:8px">CTA URL = 어드민 온보딩 등록 값 (OI-06)</div>', { center: true });
-    onClick('[data-action="woox-go"]', function () { closeModal(); toast('WOOX Pro 상세 페이지로 이동 (프로토타입)'); });
+      '<div class="cmp-row"><span class="lbl">' + T('Travel Rule') + '</span><b>Bithumb ↔ WOOX Pro</b></div></div>' +
+      '<div class="sp16"></div><button class="btn btn-primary" data-action="woox-join">' + T('Sign Up for WOOX Pro') + '</button>' +
+      '<div class="tiny muted center" style="margin-top:8px">CTA URL = 어드민 온보딩 등록 값 (OI-06)</div>' +
+      '</div>' + phoneClose();
+    mountRaw(body);
+    onClick('[data-action="woox-back"]', function () { go(state.prevScreen || 's1'); });
+    onClick('[data-action="woox-join"]', function () { toast('WOOX Pro 가입 (프로토타입)'); });
   }
   function openExchangeEvent() {
     modal('<div class="modal-title">' + T('Bitget Event') + '</div><div class="modal-sub">' + T('Trade to win up to $100K prize pool') + '</div><div class="sp16"></div><button class="btn btn-primary" data-action="ev-go">' + T('Join Event ⧉') + '</button>', { center: true });
@@ -465,6 +475,7 @@
       case 'login': renderLogin(); break;
       case 'mweb': renderMweb(); break;
       case 'mypage': renderMypage(); break;
+      case 'wooxdetail': renderWoox(); break;
     }
     renderDrawer();
   }

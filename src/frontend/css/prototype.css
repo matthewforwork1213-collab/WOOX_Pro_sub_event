@@ -154,12 +154,12 @@ body {
 .tr-logo.bithumb { background: #f37321; }
 .tr-logo.woox { background: var(--brand); }
 .tr-banner .txt { font-weight: 700; color: var(--text); }
-.tr-arrow { color: var(--muted); font-weight: 800; font-size: 13px; padding: 0 1px; }
+.tr-arrow { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 7px; background: #0f172a; color: #fff; font-size: 12px; font-weight: 800; line-height: 1; }
 .tr-wrap { display: flex; justify-content: center; padding: 12px 0; }
 .tr-wrap.full { padding: 14px 0 0; }
 .dark .tr-banner { background: #1a2334; border-color: #26324a; color: #9fb0cc; }
 .dark .tr-banner .txt { color: #e6edf7; }
-.dark .tr-arrow { color: #9fb0cc; }
+.dark .tr-arrow { background: #e6edf7; color: #0b1220; }
 /* 클릭 가능(기능 3 개정: 클릭 시 WOOX Pro 상세 이동) */
 .tr-banner { cursor: pointer; transition: box-shadow .15s, transform .05s; }
 .tr-banner:hover { box-shadow: 0 2px 8px rgba(29,78,216,.18); }
