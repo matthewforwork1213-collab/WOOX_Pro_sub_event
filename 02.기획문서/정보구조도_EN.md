@@ -47,7 +47,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     Start([Withdrawal Request]) --> Complete[Withdrawal Complete]
-    Complete --> CheckPromo{Promotion Active?}
+    Complete --> CheckPromo{Backoffice s1Feedback ON?}
     CheckPromo -->|No| BaseAd[Show Existing Event Ad]
     CheckPromo -->|Yes| CheckWoox{Withdrawal Includes WOOX Pro?}
 
@@ -78,7 +78,7 @@ flowchart TD
     Start([Preview Condition Input]) --> Result[Enter Result Page]
     Result --> CheckExchange{Selected Exchange = WOOX Pro?}
     CheckExchange -->|Yes| NoCard[Comparison Card Not Shown]
-    CheckExchange -->|No| CheckPromo{Promotion Active?}
+    CheckExchange -->|No| CheckPromo{Backoffice s2Compare ON?}
     CheckPromo -->|No| NoCard
     CheckPromo -->|Yes| CheckSupport{Meets WOOX Pro Support Conditions?}
     CheckSupport -->|No| NoCard
@@ -101,7 +101,7 @@ flowchart TD
 flowchart TD
     Start([Screen Entry: S1-S5]) --> CheckApp{App Environment &amp; S3/S4/S5?}
     CheckApp -->|Yes| NoBanner[Banner Not Shown - Native Area]
-    CheckApp -->|No| CheckPromo{Promotion Active?}
+    CheckApp -->|No| CheckPromo{Backoffice banner flag ON?}
     CheckPromo -->|No| NoBanner2[Banner Not Shown]
     CheckPromo -->|Yes| ShowBanner[Show Travel Rule Banner - Navigate to WOOX Pro Detail on Click]
 

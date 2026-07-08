@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>다이어그램 렌더러 · Mermaid → SVG (Confluence 첨부용)</title>
+  <style>
+    :root { --brand:#1d4ed8; --bg:#f7f8fa; --surface:#fff; --border:#e5e7eb; --text:#111827; --muted:#6b7280; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic",sans-serif; background:var(--bg); color:var(--text); }
+    .top { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 24px; }
+    .top h1 { font-size:18px; margin:0; color:#1e3a8a; }
+    .top .sub { color:var(--muted); font-size:13px; margin-top:4px; }
+    .wrap { max-width:1000px; margin:22px auto; padding:0 18px 60px; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; margin-bottom:20px; overflow:hidden; box-shadow:0 1px 3px rgba(16,24,40,.06); }
+    .card .head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--border); background:#fafbfc; }
+    .card .head .t { font-weight:700; font-size:14px; }
+    .card .head .src { font-size:11px; color:var(--muted); }
+    .card .render { padding:18px; overflow-x:auto; text-align:center; }
+    .card .render svg { max-width:100%; height:auto; }
+    .card .err { color:#dc2626; font-size:13px; padding:14px 16px; white-space:pre-wrap; }
+    .btns { display:flex; gap:8px; }
+    .btn { border:1px solid var(--border); background:var(--surface); border-radius:8px; padding:7px 12px; font-weight:700; font-size:12.5px; cursor:pointer; color:var(--text); }
+    .btn:hover { background:var(--bg); }
+    .btn.p { background:var(--brand); color:#fff; border-color:var(--brand); }
+    details { border-top:1px dashed var(--border); }
+    details summary { cursor:pointer; padding:10px 16px; font-size:12px; color:var(--muted); }
+    details pre { margin:0; padding:0 16px 14px; overflow-x:auto; font-size:12px; }
+    .paste { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:24px; }
+    .paste textarea { width:100%; min-height:150px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; border:1px solid var(--border); border-radius:10px; padding:12px; resize:vertical; }
+    .paste .row { display:flex; gap:8px; align-items:center; margin-top:10px; }
+    .note { background:#fffbeb; border:1px solid #fde68a; color:#92400e; border-radius:10px; padding:12px 14px; font-size:13px; line-height:1.6; margin-bottom:22px; }
+    code { background:#eef1f5; padding:1px 5px; border-radius:4px; font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <h1>다이어그램 렌더러 — Mermaid → SVG (Confluence 첨부용)</h1>
+    <div class="sub">리포의 IA·플로우차트를 도식으로 렌더합니다. 각 다이어그램의 [SVG 다운로드]로 파일을 받아 Confluence 페이지에 이미지로 첨부하세요.</div>
+  </div>
+
+  <div class="wrap">
+    <div class="note">
+      <b>사용법</b> — ① 아래 각 다이어그램의 <b>[SVG 다운로드]</b> 클릭 → ② Confluence 페이지에 이미지로 첨부(붙여넣기/업로드) → ③ 편집용 원본은 각 카드의 "소스 보기"를 복사해 <b>Expand(접기) 매크로</b>에 넣어두면 나중에 수정 가능.<br />
+      ※ 이 페이지는 Mermaid 라이브러리를 CDN에서 불러오므로 <b>인터넷 연결</b>이 필요합니다. 사내망 차단 시 <code>mermaid.live</code>(웹) 또는 <code>mermaid-cli(mmdc)</code>로 동일하게 SVG를 뽑을 수 있습니다. Confluence에 <b>Mermaid/draw.io 앱</b>이 설치돼 있으면 소스를 그대로 붙여 렌더하는 게 가장 좋습니다.
+    </div>
+
+    <!-- 임의 Mermaid 붙여넣기 렌더 (다른 문서 다이어그램에도 사용) -->
+    <div class="paste">
+      <div style="font-weight:700;margin-bottom:8px">임의 Mermaid 붙여넣기 → 렌더 / SVG 내보내기</div>
+      <textarea id="pasteArea" placeholder="flowchart TD&#10;    A --> B"></textarea>
+      <div class="row">
+        <button class="btn p" id="pasteRender">렌더</button>
+        <button class="btn" id="pasteDl">SVG 다운로드</button>
+        <span class="src" id="pasteMsg" style="color:var(--muted);font-size:12px"></span>
+      </div>
+      <div class="render" id="pasteOut" style="text-align:center;margin-top:8px"></div>
+    </div>
+
+    <div id="list"></div>
+  </div>
+
+  <!-- 리포 다이어그램 소스 (script/plain: 브라우저가 파싱하지 않음) -->
+  <script type="text/plain" class="mmd" data-title="1. 전체 사이트맵 (프로젝트 개입 지점)" data-src="정보구조도.md">
+flowchart TD
+    Home[TetherMax 홈] --> WithdrawFlow[출금 진행]
+    WithdrawFlow --> S1[S1. 출금 완료 화면]
+    S1 -.기능 1: 가상 피드백/이벤트 분기.-> F1((기능 1))
+    S1 -.기능 3: 트레블룰 배너 #2.-> F3((기능 3))
+    Home --> PreviewFlow[캐시백 프리뷰 조건 입력]
+    PreviewFlow --> S2[S2. 캐시백 프리뷰 결과 화면]
+    S2 -.기능 2: WOOX Pro 비교 카드.-> F2((기능 2))
+    S2 -.기능 3: 트레블룰 배너 #1.-> F3
+    Home --> S3[S3. 로그인 페이지 - PC]
+    S3 -.기능 3: 트레블룰 배너 #4.-> F3
+    Home --> S4[S4. 로그인 전 메뉴 - MO]
+    S4 -.기능 3: 트레블룰 배너 #3.-> F3
+    Home --> LoginFlow[로그인] --> S5[S5. 마이페이지]
+    S5 -.기능 3: 트레블룰 배너 #5.-> F3
+  </script>
+
+  <script type="text/plain" class="mmd" data-title="2.1 기능 1 — 출금 완료 후 가상 피드백 / 이벤트 분기" data-src="정보구조도.md">
+flowchart TD
+    Start([출금 요청]) --> Complete[출금 완료]
+    Complete --> CheckPromo{백오피스 s1Feedback ON?}
+    CheckPromo -->|No| BaseAd[기존 이벤트 광고 노출]
+    CheckPromo -->|Yes| CheckWoox{WOOX Pro 포함 출금?}
+    CheckWoox -->|No| CheckSaving{역효과 아님 & 절약액 산출 가능?}
+    CheckSaving -->|Yes| VirtualFeedback[가상 피드백 카드 노출]
+    CheckSaving -->|No| CheckOnb1{온보딩 이벤트 활성?}
+    CheckOnb1 -->|Yes| OnbEvt1[온보딩 이벤트 노출]
+    CheckOnb1 -->|No| BaseAd
+    CheckWoox -->|Yes| CheckWooxEvt{WOOX Pro 자체 이벤트 활성?}
+    CheckWooxEvt -->|Yes| WooxEvt[WOOX Pro 이벤트 노출]
+    CheckWooxEvt -->|No| CheckOnb2{온보딩 이벤트 활성?}
+    CheckOnb2 -->|Yes| OnbEvt2[온보딩 이벤트 노출]
+    CheckOnb2 -->|No| HouseAd[일반 하우스 광고 노출]
+    VirtualFeedback --> End([화면 표시])
+    OnbEvt1 --> End
+    WooxEvt --> End
+    OnbEvt2 --> End
+    HouseAd --> End
+    BaseAd --> End
+  </script>
+
+  <script type="text/plain" class="mmd" data-title="2.2 기능 2 — 캐시백 프리뷰 WOOX Pro 비교 카드" data-src="정보구조도.md">
+flowchart TD
+    Start([프리뷰 조건 입력]) --> Result[결과 페이지 진입]
+    Result --> CheckExchange{선택 거래소 = WOOX Pro?}
+    CheckExchange -->|Yes| NoCard[비교 카드 미노출]
+    CheckExchange -->|No| CheckPromo{백오피스 s2Compare ON?}
+    CheckPromo -->|No| NoCard
+    CheckPromo -->|Yes| CheckSupport{WOOX Pro 지원 조건?}
+    CheckSupport -->|No| NoCard
+    CheckSupport -->|Yes| CheckReverse{역효과 아님?}
+    CheckReverse -->|No| NoCard
+    CheckReverse -->|Yes| ShowCard[비교 카드 인라인 노출 - 펼침 기본]
+    ShowCard --> ToggleCheck{유저가 접기 클릭?}
+    ToggleCheck -->|Yes| Collapsed[카드 접힘]
+    ToggleCheck -->|No| Expanded[카드 펼침 유지]
+    NoCard --> End([결과 화면 표시])
+    Collapsed --> End
+    Expanded --> End
+  </script>
+
+  <script type="text/plain" class="mmd" data-title="2.3 기능 3 — 트레블룰 연동 배너 (5개 위치 공통)" data-src="정보구조도.md">
+flowchart TD
+    Start([화면 진입: S1~S5]) --> CheckApp{App 환경 & S3/S4/S5?}
+    CheckApp -->|Yes| NoBanner[배너 미노출 - 네이티브 영역]
+    CheckApp -->|No| CheckFlag{백오피스 배너 플래그 ON?}
+    CheckFlag -->|No| NoBanner2[배너 미노출]
+    CheckFlag -->|Yes| ShowBanner[트레블룰 배너 노출 - 클릭 시 WOOX Pro 상세 이동]
+    NoBanner --> End([화면 표시])
+    NoBanner2 --> End
+    ShowBanner --> End
+  </script>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+
+    let seq = 0;
+    async function render(code) {
+      seq += 1;
+      const clean = code.replace(/&amp;/g, '&').trim();
+      const { svg } = await mermaid.render('m' + seq + '_' + Date.now(), clean);
+      return svg;
+    }
+    function downloadSVG(svg, name) {
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name.replace(/[^\w가-힣.\- ]/g, '_') + '.svg';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // 리포 다이어그램 렌더
+    const list = document.getElementById('list');
+    const blocks = document.querySelectorAll('script.mmd');
+    for (const b of blocks) {
+      const title = b.getAttribute('data-title');
+      const src = b.getAttribute('data-src') || '';
+      const code = b.textContent;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML =
+        '<div class="head"><div><div class="t"></div><div class="src"></div></div>' +
+        '<div class="btns"><button class="btn p dl">SVG 다운로드</button></div></div>' +
+        '<div class="render">렌더 중…</div>' +
+        '<details><summary>소스 보기 / 복사</summary><pre></pre></details>';
+      card.querySelector('.t').textContent = title;
+      card.querySelector('.src').textContent = src;
+      card.querySelector('pre').textContent = code.trim();
+      list.appendChild(card);
+      try {
+        const svg = await render(code);
+        card.querySelector('.render').innerHTML = svg;
+        card.querySelector('.dl').addEventListener('click', () => downloadSVG(svg, title));
+      } catch (e) {
+        card.querySelector('.render').outerHTML = '<div class="err">렌더 실패: ' + (e && e.message ? e.message : e) + '</div>';
+      }
+    }
+
+    // 붙여넣기 렌더
+    let pasteSVG = '';
+    document.getElementById('pasteRender').addEventListener('click', async () => {
+      const code = document.getElementById('pasteArea').value;
+      const out = document.getElementById('pasteOut');
+      const msg = document.getElementById('pasteMsg');
+      if (!code.trim()) { msg.textContent = '코드를 입력하세요.'; return; }
+      try { pasteSVG = await render(code); out.innerHTML = pasteSVG; msg.textContent = '렌더 완료'; }
+      catch (e) { out.innerHTML = ''; pasteSVG = ''; msg.textContent = '오류: ' + (e && e.message ? e.message : e); }
+    });
+    document.getElementById('pasteDl').addEventListener('click', () => {
+      if (!pasteSVG) { document.getElementById('pasteMsg').textContent = '먼저 렌더하세요.'; return; }
+      downloadSVG(pasteSVG, 'diagram');
+    });
+  </script>
+</body>
+</html>
