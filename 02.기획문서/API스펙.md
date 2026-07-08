@@ -39,9 +39,13 @@
 
 | API-ID | Method | URL | 기능명 | 관련 기능 ID |
 |---|---|---|---|---|
-| API-001 | GET | /api/promo/status | 프로모션 활성 상태 조회 | F-004, F-005 |
+| API-001 | GET | /api/promo/status | 프로모션 노출 상태(5개 플래그) 조회 — 유저 프론트 | F-004, F-005 |
 | API-002 | GET | /api/promo/withdrawal-feedback | 출금 완료 후 가상 피드백/이벤트 분기 조회 | F-001, F-002 |
 | API-003 | POST | /api/promo/cashback-preview/compare | 캐시백 프리뷰 WOOX Pro 비교 조회 | F-003 |
+| API-B01 | GET | /api/admin/promo/visibility | **백오피스** 노출 제어 설정 조회 | A-001 |
+| API-B02 | PUT | /api/admin/promo/visibility | **백오피스** 노출 제어 설정 저장(on/off) | A-002 |
+
+> API-B01·B02는 **백오피스(어드민) 전용**이며 어드민 인증·권한이 필요하다. 유저 프론트가 읽는 API-001과 동일한 5개 플래그를 대상으로 하되, 백오피스가 write, 유저 프론트가 read한다. 상세는 `기능명세서_백오피스.md`·`PRD_백오피스.md` 참조.
 
 ---
 
@@ -196,3 +200,73 @@
 | 400 | BAD_REQUEST | makerRatio + takerRatio ≠ 100, 필수 파라미터 누락 |
 | 404 | NOT_FOUND | 존재하지 않는 `exchange` ID |
 | 500 | INTERNAL_ERROR | 계산 실패. 어드민 "테더맥스 적용" 필드 이중곱 버그(OI-10)가 미수정 상태면 결과 정확도가 보장되지 않으므로, 해당 버그 수정 완료 전에는 이 API를 프로덕션에 배포하지 않는다 (기능명세서_BE F-003 참조) |
+
+---
+
+## 백오피스(어드민) API
+
+> 어드민 인증·권한 필요(기존 어드민 권한 체계 재사용). 5개 노출 플래그를 대상으로 하며, **백오피스가 write, 유저 프론트(API-001)가 read**한다. 상세: `PRD_백오피스.md`·`기능명세서_백오피스.md`.
+
+### API-B01. 노출 제어 설정 조회 (어드민)
+
+| 항목 | 내용 |
+|---|---|
+| Method | GET |
+| URL | /api/admin/promo/visibility |
+| 인증 | 어드민 세션·권한 필수 (프로모션 운영 권한) |
+| 설명 | 노출 제어 페이지 진입 시 현재 5개 플래그 상태를 조회 (A-001) |
+
+**Response (200 OK)**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "s1Feedback": true,
+    "s1Banner": true,
+    "s2Compare": true,
+    "s2Banner": true,
+    "loginBanners": true
+  }
+}
+```
+
+**에러 Response**
+
+| 상태 코드 | 에러 코드 | 조건 |
+|---|---|---|
+| 401 | UNAUTHORIZED | 어드민 미인증 |
+| 403 | FORBIDDEN | 프로모션 운영 권한 없음 |
+
+### API-B02. 노출 제어 설정 저장 (어드민)
+
+| 항목 | 내용 |
+|---|---|
+| Method | PUT |
+| URL | /api/admin/promo/visibility |
+| 인증 | 어드민 세션·권한 필수 |
+| 설명 | 5개 플래그를 저장한다. 부분 필드만 보내도 되며(미포함 필드는 기존값 유지) 각 영역 독립 제어. 저장 즉시 API-001에 반영(장기 캐시 금지, NFR-004). 변경 시 감사 로그 적재(A-003) |
+
+**Request (application/json)**
+
+| 파라미터 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| s1Feedback | bool | N | 출금완료 WOOX Pro 가상 피드백 노출 |
+| s1Banner | bool | N | 출금완료 트레블룰 배너(#2) 노출 |
+| s2Compare | bool | N | 캐시백 프리뷰 WOOX Pro 비교 노출 |
+| s2Banner | bool | N | 캐시백 프리뷰 트레블룰 배너(#1) 노출 |
+| loginBanners | bool | N | 로그인 3페이지 트레블룰 배너(#3·#4·#5 일괄) 노출 |
+
+```json
+{ "s2Compare": false }
+```
+
+**Response (200 OK)**: 저장 후 전체 5개 플래그 최신값을 API-B01과 동일 스키마로 반환
+
+**에러 Response**
+
+| 상태 코드 | 에러 코드 | 조건 |
+|---|---|---|
+| 400 | BAD_REQUEST | 허용되지 않은 필드/타입 |
+| 401 | UNAUTHORIZED | 어드민 미인증 |
+| 403 | FORBIDDEN | 프로모션 운영 권한 없음 |
