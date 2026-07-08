@@ -39,9 +39,13 @@
 
 | API-ID | Method | URL | Function Name | Related Feature ID |
 |---|---|---|---|---|
-| API-001 | GET | /api/promo/status | Query promotion active status | F-004, F-005 |
+| API-001 | GET | /api/promo/status | Query promotion visibility (5 flags) — user front | F-004, F-005 |
 | API-002 | GET | /api/promo/withdrawal-feedback | Query virtual feedback/event branch after withdrawal completion | F-001, F-002 |
 | API-003 | POST | /api/promo/cashback-preview/compare | Query WOOX Pro comparison for cashback preview | F-003 |
+| API-B01 | GET | /api/admin/promo/visibility | **Backoffice** — query visibility-control settings | A-001 |
+| API-B02 | PUT | /api/admin/promo/visibility | **Backoffice** — save visibility-control settings (on/off) | A-002 |
+
+> API-B01·B02 are **backoffice (admin) only** and require admin authentication/permission. They target the same 5 flags as API-001 (user front), where the backoffice writes and the user front reads. See `기능명세서_백오피스.md`·`PRD_백오피스_EN.md`.
 
 ---
 
@@ -196,3 +200,73 @@
 | 400 | BAD_REQUEST | makerRatio + takerRatio ≠ 100, or a required parameter is missing |
 | 404 | NOT_FOUND | Non-existent `exchange` ID |
 | 500 | INTERNAL_ERROR | Calculation failure. If the admin's "TetherMax Applied" field double-multiplication bug (OI-10) remains unfixed, result accuracy cannot be guaranteed, so this API must not be deployed to production until that bug fix is complete (see 기능명세서_BE_EN.md F-003) |
+
+---
+
+## Backoffice (Admin) API
+
+> Requires admin authentication/permission (reuse of the existing admin permission system). Targets the 5 visibility flags; the **backoffice writes and the user front (API-001) reads**. Details: `PRD_백오피스_EN.md`·`기능명세서_백오피스.md`.
+
+### API-B01. Query Visibility-Control Settings (Admin)
+
+| Item | Content |
+|---|---|
+| Method | GET |
+| URL | /api/admin/promo/visibility |
+| Auth | Admin session/permission required (promotion operation permission) |
+| Description | On entering the visibility-control page, query the current state of the 5 flags (A-001) |
+
+**Response (200 OK)**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "s1Feedback": true,
+    "s1Banner": true,
+    "s2Compare": true,
+    "s2Banner": true,
+    "loginBanners": true
+  }
+}
+```
+
+**Error Response**
+
+| Status Code | Error Code | Condition |
+|---|---|---|
+| 401 | UNAUTHORIZED | Admin not authenticated |
+| 403 | FORBIDDEN | No promotion operation permission |
+
+### API-B02. Save Visibility-Control Settings (Admin)
+
+| Item | Content |
+|---|---|
+| Method | PUT |
+| URL | /api/admin/promo/visibility |
+| Auth | Admin session/permission required |
+| Description | Saves the 5 flags. A partial set of fields may be sent (omitted fields keep their existing value); each area is controlled independently. Reflected in API-001 immediately upon save (no long-term caching, NFR-004). Writes an audit log on change (A-003) |
+
+**Request (application/json)**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| s1Feedback | bool | N | Show withdrawal-complete WOOX Pro Virtual Feedback |
+| s1Banner | bool | N | Show withdrawal-complete Travel Rule banner (#2) |
+| s2Compare | bool | N | Show Cashback Preview WOOX Pro comparison |
+| s2Banner | bool | N | Show Cashback Preview Travel Rule banner (#1) |
+| loginBanners | bool | N | Show login 3-page Travel Rule banner (#3·#4·#5 collectively) |
+
+```json
+{ "s2Compare": false }
+```
+
+**Response (200 OK)**: after saving, returns the latest values of all 5 flags in the same schema as API-B01
+
+**Error Response**
+
+| Status Code | Error Code | Condition |
+|---|---|---|
+| 400 | BAD_REQUEST | Disallowed field/type |
+| 401 | UNAUTHORIZED | Admin not authenticated |
+| 403 | FORBIDDEN | No promotion operation permission |
