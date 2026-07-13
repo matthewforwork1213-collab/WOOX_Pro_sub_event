@@ -350,18 +350,19 @@ The WOOX Pro Comparison Card is not inserted, and only the normal payback result
 
 [Travel Rule Trust Banner — Feature 3 (5 positions)]
 │
-├── Promotion active → Display banner at 5 positions (navigates to WOOX Pro detail on click)
-└── Promotion terminated → Remove banner from all 5 positions
+├── Banner flag ON → Display banner at that position (navigates to WOOX Pro detail on click)
+└── Banner flag OFF → Remove the banner at that position only
 
-[Promotion Active Determination — Common Precheck Before Entering Each Feature]
+[Visibility Determination — Check the backoffice flag before entering each area (2026-07-07 policy)]
 │
-├── Visible per area = backoffice on/off (D+30 · WOOX-event gate abolished, 2026-07-07)
+├── Per-area independent determination (D+30 · 2-WOOX-event gate abolished)
+│   ├── s1Feedback   → OFF: Feature 1 Virtual Feedback hidden → existing "1 random exchange event" logic
+│   ├── s2Compare    → OFF: Feature 2 comparison card not inserted → existing result screen only
+│   ├── s1Banner     → OFF: remove banner #2 (S1) only
+│   ├── s2Banner     → OFF: remove banner #1 (S2) only
+│   └── loginBanners → OFF: remove banners #3·#4·#5 (login 3-page) collectively
 │
-└── Any area OFF in backoffice → that area falls back to base (independent per area)
-    ├── Feature 1 → Existing "1 random exchange event" logic
-    ├── Feature 2 → Existing result screen without the WOOX Pro comparison card
-    └── Feature 3 → Travel Rule banner removed from all 5 positions
-    (※ Each area is controlled independently by backoffice on/off)
+└── (※ No global termination gate — per-area independent/partial control. The period is admin-controlled)
 ```
 
 ---
@@ -387,7 +388,7 @@ The WOOX Pro Comparison Card is not inserted, and only the normal payback result
 - [x] Comparison target exchanges → **all exchanges that have completed onboarding & have exposure = Y** (dynamic)
 - [x] WOOX Pro sign-up/detail URL → use the **Admin onboarding registration value** (OI-06 resolved)
 - [x] Platform scope → S1, S2 are PC · MO · App (webview); S3~S5 are app-native, so Web (PC/MO) only
-- [x] Promotion duration → **lasts only 30 days from WOOX Pro launch (exchange onboarding)**, rolled back thereafter. Not made permanent (OI-07 closed)
+- [x] Promotion duration → **the period is controlled by admin (backoffice)** (D+30 auto-termination abolished; permanent display possible). OI-07 updated by the 2026-07-07 C-level decision — supersedes "30 days only, not made permanent"
 - [x] Feature 2 calculation formula → confirmed reflection of the existing cashback engine's **Monthly Estimated Cashback** formula (balance, leverage, TIME, Maker/Taker weighted fee rate, Payback Rate, Correction Factor). Maker/Taker are weighted-summed only at the fee-rate stage; Payback Rate is a single value (§2-A-1)
 - [x] Correction Factor → **fixed constant of 0.7** (identical across all exchanges/all products, can be hardcoded) → reflected in the preview-exclusive Total Saving Rate formula: `1−(1−Discount Rate)(1−Payback Rate×0.7)`. Since the value is identical across all exchanges, it does not affect the comparison outcome (but must be reflected in the absolute displayed amount). Feature 1 (actual-measurement reverse calculation) does not apply the Correction Factor
 - [x] **Virtual Feedback/comparison card display method (confirmed per OI-08, 2026-07-03)**: finally confirmed as **Total Saving basis**. Framing: "You could have saved OOO USDT more in fees if you had used WOOX Pro." Payback Rate basis (alternative) discarded. Applied in common to Features 1 and 2 (§2-A-1)
@@ -412,7 +413,7 @@ To allow developers to begin work without omission on a **page/feature basis**, 
 
 | Category | Task |
 |------|------|
-| BE | ① **Visibility control** = query 5 per-area backoffice on/off flags (D+30 · 2-WOOX-event gate abolished, 2026-07-07) · ② Promotion period determination (WOOX Pro exchange onboarding = globally fixed date +30 days) · ③ Exchange master lookup (Discount Rate, Payback Rate, exposure Y, logo, sign-up/detail URL, Admin onboarding registration value) · ④ **Total Saving Rate calculation** — Nominal (Feature 1) `1−(1−Discount Rate)(1−Payback Rate)` / Preview (Feature 2, Correction Factor fixed at 0.7) `1−(1−Discount Rate)(1−Payback Rate×0.7)` · ⑤ **Adverse-case determination** (not displayed if other Total Saving ≥ WOOX Pro's, using the formula appropriate to each feature) |
+| BE | ① **Visibility control** = query 5 per-area backoffice on/off flags (D+30 · 2-WOOX-event gate abolished, 2026-07-07) · ② (D+30 automatic period determination abolished — the period is controlled via backoffice on/off) · ③ Exchange master lookup (Discount Rate, Payback Rate, exposure Y, logo, sign-up/detail URL, Admin onboarding registration value) · ④ **Total Saving Rate calculation** — Nominal (Feature 1) `1−(1−Discount Rate)(1−Payback Rate)` / Preview (Feature 2, Correction Factor fixed at 0.7) `1−(1−Discount Rate)(1−Payback Rate×0.7)` · ⑤ **Adverse-case determination** (not displayed if other Total Saving ≥ WOOX Pro's, using the formula appropriate to each feature) |
 | FE | ① Multilingual (i18n) resources · ② USDT amount/%p formatter · ③ Common brand-color Primary CTA component |
 
 ### 6-1. Feature 1 — Virtual Feedback After Withdrawal Completion (Screen S1)

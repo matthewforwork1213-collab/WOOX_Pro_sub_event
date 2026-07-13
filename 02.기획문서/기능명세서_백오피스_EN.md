@@ -39,10 +39,10 @@
 |---|---|
 | Description | When an admin changes an individual toggle, save it to the server so that it is reflected in new user-front requests immediately |
 | Input | Toggle change (item key + new value), admin session |
-| Processing | 1) Verify admin permission 2) Save the 5 flags including the changed item via `PUT /api/admin/promo/visibility` 3) On success, "Saved" feedback 4) The saved value is reflected as-is by the user front `GET /api/promo/status` (API-001) (no long-term caching, NFR-004) |
+| Processing | 1) Verify admin permission 2) Save via `PUT /api/admin/promo/visibility`, where **only the changed fields may be sent (partial)** (omitted fields keep their existing value, API-B02) 3) On success, "Saved" feedback 4) The saved value is reflected as-is by the user front `GET /api/promo/status` (API-001) (no long-term caching, NFR-004) |
 | Save target | `s1Feedback`·`s1Banner`·`s2Compare`·`s2Banner`·`loginBanners` (each bool). Default all ON |
 | Rules | Each item is **saved independently** (a single area can be turned OFF). Partial control allowed. No D+30 · event-dependency determination |
-| Exception Handling | On save failure, roll back the toggle + show an error notice. No permission → block. On concurrent-edit conflict, last save wins (⚠️ related to OI-B2) |
+| Exception Handling | On save failure, roll back the toggle + show an error notice. No permission → block. On concurrent-edit conflict, **last-write-wins** — optimistic locking (version/ETag/409) is out of scope |
 | Related API | PUT /api/admin/promo/visibility (API-B02) |
 
 ## A-003. Record Change Audit Log
@@ -66,7 +66,7 @@
 | Each row | Label + description + position tag (#) + on/off toggle + current state (ON/OFF) |
 | Auxiliary | All ON / All OFF, "Open user prototype" link, save feedback |
 | Policy notice | State at the top: "2026-07-07 C-level decision: the period is controlled by admin (D+30 abolished)" |
-| Prototype | `src/backoffice/index.html` (saves the 5 flags in localStorage `wooxpromo_admin`, shared with the user prototype) |
+| Prototype | `src/backoffice/index.html` (saves the 5 flags in localStorage `wooxpromo_admin`, shared with the user prototype). **UI simulation only** — the real implementation uses API-B01/B02 (server-persisted); the prototype has no permissions, audit log, or API calls |
 
 ---
 

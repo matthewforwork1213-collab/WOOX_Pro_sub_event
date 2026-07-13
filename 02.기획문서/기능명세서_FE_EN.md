@@ -75,7 +75,7 @@ Each feature detail (§2) references this section rather than repeating it.
 ### 1.6 CTA
 
 - The Primary CTA applies the **TetherMax brand color** (CLAUDE.md rule 5).
-- The CTA destination is the **WOOX Pro exchange detail page**, and the URL uses the **admin onboarding registration value** (OI-06, REQ-014).
+- The click destination for CTAs and the Travel Rule banner is the **WOOX Pro exchange detail page**, and the URL uses **`wooxProDetailUrl` from the API-001 response** (admin onboarding-registered value) (OI-06, REQ-014). Feature 1 CTA · Feature 2 CTA · Feature 3 banner all navigate to this value.
 
 ---
 
@@ -116,7 +116,7 @@ Each feature detail (§2) references this section rather than repeating it.
 | Input | Preview input values (exchange·asset scale·leverage·Maker/Taker ratio·trade frequency), comparison card collapse toggle click |
 | Processing | 1) Pass the preview input values as-is to BE to request the comparison result 2) If `visible=true`, render the comparison card below the result card (expanded by default) 3) On collapse button click, toggle expand/collapse using local state only (no re-request) 4) Render with the **Total Saving basis copy template** (OI-08 confirmed) |
 | Copy Template | Headline: "You're losing out with the exchange you selected right now" · Sub: "With WOOX Pro, estimated monthly savings: **+{savingAmount} USDT ({savingPercentPoint}%p)**" · Primary CTA: "Start with WOOX Pro" |
-| Output (UI) | Comparison Card (headline, savings amount USDT, %p, "standard user / base tier basis" caption, CTA button, collapse toggle) |
+| Output (UI) | Comparison Card (headline, **current exchange vs WOOX Pro monthly estimated cashback** (`currentExchangeEstimate`·`wooxProEstimate`), savings amount USDT (`savingAmount`), %p (`savingPercentPoint`), "standard user / base tier basis" caption, CTA button, collapse toggle) |
 | Collapse Policy | Collapse **provided** (OI-05 confirmed). **No forced close (X) UI** (REQ-012). Both collapsed/expanded states supported |
 | Exception Handling | `visible=false` (counter-effect·WOOX Pro unsupported condition) → comparison card not rendered, existing result screen only. When exchange=WOOX Pro is selected, **the API itself is not called** (comparison card concept unnecessary, REQ-010) |
 | Related Screens | S2 — PC·MO·App (webview) |
@@ -134,7 +134,7 @@ Each feature detail (§2) references this section rather than repeating it.
 | 5 Locations | #1 Below Cashback Preview Result (S2) · #2 Outside below Withdrawal Result Card (S1) · #3 Below MO pre-login button (S4) · #4 Top of PC Login Page (S3) · #5 Below Member ID on My Page (S5) |
 | Exception Handling | If a position's backoffice flag is OFF, that banner is not shown (#3·#4·#5 collectively via `loginBanners`). In the App environment, only S1·S2 are rendered; S3~S5 are native and thus excluded (§1.2) |
 | Related Screens | S1·S2 — PC·MO·App / S3·S4·S5 — Web (PC/MO) only |
-| Related API | GET /api/promo/status (API-001, uses `active` + `travelRuleBanner.i18nKey`) |
+| Related API | GET /api/promo/status (API-001) — uses the per-position banner flags (`s1Banner`/`s2Banner`/`loginBanners`) + `travelRuleBanner.i18nKey` + `wooxProDetailUrl` (click destination) |
 | Requirements | REQ-016~019 |
 
 ### F-005. Visibility Control State Reflection (Backoffice On/Off)
@@ -163,7 +163,7 @@ Each feature detail (§2) references this section rather than repeating it.
 | S2 | Other exchange & `visible=false` (counter-effect·unsupported) | Result card only + Banner #1 |
 | S2 | WOOX Pro selected | Result card only (API not called) + Banner #1 |
 | S3~S5 | `loginBanners` ON | Location-specific banner only (#4/#3/#5) |
-| All | Promotion inactive | No nudges·banners shown at all (base) |
+| Each area | Its backoffice flag OFF | Only that area hidden (base). There is no global inactive state — per-area independent |
 
 ---
 
@@ -178,6 +178,7 @@ Each feature detail (§2) references this section rather than repeating it.
 | F-003 `visible=false` | Comparison card not inserted, result screen only |
 | F-003 exchange=WOOX Pro | API not called, no comparison card |
 | F-003 400/404 | After input validation, comparison card not inserted (result screen maintained) |
+| F-003 500 · timeout | Comparison card not inserted, existing result screen only (a nudge failure must not block the result screen) |
 | Time display needed | UTC→device local time conversion (fixed KST prohibited) |
 | App environment S3~S5 | Excluded from rendering (native) |
 

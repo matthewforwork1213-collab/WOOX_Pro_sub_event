@@ -20,7 +20,7 @@
 | 응답 형식 | JSON |
 | 문자 인코딩 | UTF-8 |
 | 다국어 | 응답에 번역 텍스트를 직접 담지 않고 i18n 키만 반환한다. 실제 문구는 FE의 다국어 리소스에서 로케일에 맞게 렌더링 (금액·%p 같은 결과값은 예외적으로 서버가 숫자로 반환) |
-| 시간대 | 모든 타임스탬프 필드는 **UTC(ISO 8601)** 로 응답한다. 배치 처리(KST 20:00)·프로모션 판정(D+30)은 서버 내부적으로 KST 기준이나, API 응답과 화면 노출은 UTC → **사용자 기기 로컬 타임존** 변환을 거친다(FE 렌더링 시 적용). KST 고정 문구로 응답하지 않는다 (NFR-007) |
+| 시간대 | 모든 타임스탬프 필드는 **UTC(ISO 8601)** 로 응답한다. 배치 처리(KST 20:00)는 서버 내부적으로 KST 기준이나, API 응답과 화면 노출은 UTC → **사용자 기기 로컬 타임존** 변환을 거친다(FE 렌더링 시 적용). KST 고정 문구로 응답하지 않는다 (NFR-007). (2026-07-07 D+30 자동 판정 폐지 — 기간은 백오피스 통제) |
 
 ### 공통 에러 코드
 
@@ -78,7 +78,8 @@
     "loginBanners": true,
     "travelRuleBanner": {
       "i18nKey": "promo.travelrule.badge"
-    }
+    },
+    "wooxProDetailUrl": "https://.../exchange/woox-pro"
   }
 }
 ```
@@ -87,6 +88,7 @@
 - `s1Banner`·`s2Banner`·`loginBanners`: 트레블룰 배너(#2 / #1 / #3·#4·#5 일괄) 노출 여부 (F-004)
 - `s2Compare`: 캐시백 프리뷰 WOOX Pro 비교(F-003) 노출 여부. false면 비교 카드 미삽입 (REQ-020~022)
 - `travelRuleBanner.i18nKey`: 배너 문구의 i18n 키(로고 이미지는 디자인 하드코딩이므로 API로 내려주지 않음, REQ-017)
+- `wooxProDetailUrl`: **CTA·트레블룰 배너 클릭 시 이동할 WOOX Pro 거래소 상세 URL**(어드민 온보딩 등록 값, OI-06). 기능 1 CTA·기능 2 CTA·기능 3 배너가 공통으로 이 값으로 이동한다. 비로그인(S3·S4)에서도 내려받을 수 있어야 함
 
 **에러 Response**
 
@@ -119,8 +121,8 @@
     "case": "non_woox_pro",
     "visible": true,
     "savingAmount": 26.0,
-    "savingPercentPoint": 15.0,
-    "exchangeCount": 2
+    "savingPercentPoint": 26.0,
+    "exchangeCount": 1
   }
 }
 ```

@@ -45,7 +45,7 @@ All features assume the common rules below. Each feature detail (§3) references
 
 ### 1.2 Time Handling (KST Internal / UTC Response)
 
-- Batch processing (KST 20:00) and promotion decision (D+30) are calculated **server-internally on a KST absolute-time** basis.
+- Batch processing (KST 20:00) is calculated **server-internally on a KST absolute-time** basis. (2026-07-07: D+30 auto-determination abolished — the period is controlled by the backoffice)
 - **All timestamp fields in API responses are returned in UTC (ISO 8601).** Local time conversion for display is performed by the FE. The server does not embed fixed KST text in responses (NFR-007).
 
 ### 1.3 Non-Disclosure of Internal Figures (Response Payload Rule)
@@ -224,7 +224,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 |---|---|
 | Description | Calculates the Monthly Estimated Cashback (§2.5) of the current exchange and WOOX Pro respectively using the user's input conditions, and returns the comparison result on a Total Saving basis |
 | Input | `exchange` (current exchange), `balance`, `leverage`, `makerRatio`, `takerRatio` (sum=100), `dailyTradeFrequency` (TIME mapping, §2.5) |
-| Processing | 1) Check the backoffice `s2Compare` flag (if OFF, not shown, §1.1) 2) Calculate `actualFeePaid`·`Monthly Estimated Cashback` (0.7 applied) with the current exchange parameters 3) Substitute WOOX Pro parameters (Discount Rate 0·Payback Rate 80%·0.7) into the same input to calculate the WOOX Pro value 4) Adverse-case decision using the **preview-specific** Total Saving Rate (§2.2): other exchange ≥ WOOX Pro → `visible=false` (§1.4) 5) If the leverage·product is unsupported by WOOX Pro, `visible=false` 6) If neither adverse nor unsupported, derive the net cost difference on a Total Saving basis as `savingAmount` (0.7 applied) 7) `savingPercentPoint` is separately calculated as the **nominal** Total Saving Rate difference (§2.3, 0.7 not applied) |
+| Processing | 1) Check the backoffice `s2Compare` flag (if OFF, not shown, §1.1) 2) Calculate `actualFeePaid`·`Monthly Estimated Cashback` (0.7 applied) with the current exchange parameters 3) Substitute WOOX Pro parameters (Discount Rate 0·Payback Rate 80%·0.7) into the same input to calculate the WOOX Pro value 4) Adverse-case decision using the **preview-specific** Total Saving Rate (§2.2): other exchange ≥ WOOX Pro → `visible=false` (§1.4) 5) If the leverage·product is unsupported by WOOX Pro, `visible=false` (**unsupported determination**: query the WOOX Pro supported leverage/product range registered in the exchange master/admin; out-of-range input = unsupported. See §5 data source) 6) If neither adverse nor unsupported, derive the net cost difference on a Total Saving basis as `savingAmount` (0.7 applied) 7) `savingPercentPoint` is separately calculated as the **nominal** Total Saving Rate difference (§2.3, 0.7 not applied) |
 | Output Fields | `visible` (bool), `currentExchangeEstimate`, `wooxProEstimate` (each Monthly Estimated Cashback, 0.7-applied value·raw data not included), `savingAmount` (USDT, 0.7 applied), `savingPercentPoint` (nominal %p) |
 | Exception Handling | `exchange`=WOOX Pro not being called by FE is the default contract (REQ-010), but the server also defensively returns `visible=false`. `makerRatio+takerRatio≠100` or required field missing → 400. Nonexistent `exchange` → 404. Calculation failure → 500 (however, deployment prohibited if the OI-10 bug is not fixed) |
 | Related Screen | S2 (Cashback Preview Result Page) |
@@ -238,7 +238,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 | Description | Determines the exposure status and copy i18n key of the Travel Rule Integration Banner at 5 positions |
 | Input | Screen-entry request (position-agnostic, common decision), user locale (copy rendered by FE) |
 | Processing | 1) Check the per-position backoffice flag (#2=`s1Banner`, #1=`s2Banner`, #3·#4·#5=`loginBanners`) 2) If ON, return `visible=true` + i18n key (e.g., `promo.travelrule.badge`). **Navigates to WOOX Pro detail on click** (OI-06 URL) 3) Pre-login requests (S3·S4) also use the same decision without a user identifier (session-agnostic, REQ-019) |
-| Output Fields | `active` (bool, API-001) + `travelRuleBanner.i18nKey`. (Logo images are not returned via API — design hardcoded, REQ-017) |
+| Output Fields | Per-position banner flags (#2=`s1Banner`, #1=`s2Banner`, #3·#4·#5=`loginBanners`) + `travelRuleBanner.i18nKey` + `wooxProDetailUrl` (banner click destination, OI-06). (API-001 response; logo images are not returned via API — design hardcoded, REQ-017) |
 | Exception Handling | When `active=false`, returns the not-displayed value. On status-query failure, safely treated as `active=false` per the F-005 rule |
 | Related Screen | S1~S5 (for App, only S1·S2 apply, see §FE Platform Matrix) |
 | Related API | GET /api/promo/status (API-001, shared with F-005) |
@@ -251,7 +251,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 | Description | Provides the 5 per-area backoffice on/off flags. F-001·F-003·F-004 consume their own area's flag. **(2026-07-07 policy: D+30 · 2-WOOX-event gate abolished, §1.1)** |
 | Input | None (server internal state) — WOOX Pro onboarding reference date, Admin termination status of the two WOOX Pro events |
 | Processing | Returns the 5 flags stored in the backoffice (`s1Feedback`·`s1Banner`·`s2Compare`·`s2Banner`·`loginBanners`). No D+30 · event-dependency determination |
-| Output Fields | `s1Feedback`·`s1Banner`·`s2Compare`·`s2Banner`·`loginBanners` (each bool) — per-area independent |
+| Output Fields | `s1Feedback`·`s1Banner`·`s2Compare`·`s2Banner`·`loginBanners` (each bool) — per-area independent. Also returns `travelRuleBanner.i18nKey` and `wooxProDetailUrl` (CTA/banner click destination, OI-06) (API-001) |
 | Exception Handling | On settings-query failure, safely treat **all flags as OFF** (fallback toward not showing the nudge) |
 | Related Screen | All of S1~S5 (common gate) |
 | Related API | GET /api/promo/status (API-001) |
@@ -274,7 +274,7 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 | `makerRatio+takerRatio≠100`/required missing (F-003) | 400 BAD_REQUEST | FE input validation |
 | Nonexistent `exchange` (F-003) | 404 NOT_FOUND | — |
 | Calculation failure | 500 INTERNAL_ERROR | FE base fallback |
-| Event termination-status query failure (F-005) | Safe response with `active:false` (avoid 500) | Nudge not displayed |
+| Backoffice settings-query failure (F-005) | Safe response with **all 5 flags false** (avoid 500) | Nudges/banners not displayed |
 | OI-10 double-multiplication bug not fixed (F-003) | API-003 production deployment prohibited | Precondition before launch |
 
 ---
@@ -285,7 +285,8 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 |---|---|---|
 | Per-exchange Maker/Taker fee rate·Discount Rate·Payback Rate | F-001 reverse-calculation, F-003 calculation | None (read existing values) |
 | WOOX Pro event / Onboarding Event registration·active status | F-002 branch decision | None |
-| Termination status of the two WOOX Pro events | F-005 gate (OR) | None (reuse existing termination button) |
+| The 5 visibility flags (stored in the backoffice) | F-005 query (user front reads) | None (the backoffice page writes, API-B01/B02) |
+| WOOX Pro supported leverage/product range | F-003 unsupported determination | None (read the exchange master) |
 | WOOX Pro exchange detail URL (onboarding registration value, OI-06) | CTA destination (FE consumed) | None |
 | "TetherMax Applied (%)" field double-multiplication bug (OI-10) | F-003 accuracy precondition | Separate engineering track |
 

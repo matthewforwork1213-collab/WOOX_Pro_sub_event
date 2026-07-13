@@ -75,7 +75,7 @@
 ### 1.6 CTA
 
 - Primary CTA는 **TetherMax 브랜드 컬러**를 적용한다(CLAUDE.md 규칙 5).
-- CTA 목적지는 **WOOX Pro 거래소 상세 페이지**이며, URL은 **어드민 온보딩 등록 값**을 사용한다(OI-06, REQ-014).
+- CTA·트레블룰 배너 클릭 목적지는 **WOOX Pro 거래소 상세 페이지**이며, URL은 **API-001 응답의 `wooxProDetailUrl`**(어드민 온보딩 등록 값)을 사용한다(OI-06, REQ-014). 기능 1 CTA·기능 2 CTA·기능 3 배너가 공통으로 이 값으로 이동한다.
 
 ---
 
@@ -116,7 +116,7 @@
 | 입력 | 프리뷰 입력값(거래소·자산 규모·레버리지·Maker/Taker 비율·거래 빈도), 비교 카드 접기 토글 클릭 |
 | 처리 | 1) 프리뷰 입력값을 그대로 BE에 전달해 비교 결과 요청 2) `visible=true`면 결과 카드 아래 비교 카드 렌더(기본 펼침) 3) 접기 버튼 클릭 시 로컬 상태만으로 펼침/접힘 토글(재요청 없음) 4) **토탈 세이빙 기준 카피 템플릿**으로 렌더(OI-08 확정) |
 | 카피 템플릿 | 헤드라인: "지금 선택한 거래소로 손해 보고 있어요" · 서브: "WOOX Pro라면 월 예상 절약액: **+{savingAmount} USDT ({savingPercentPoint}%p)**" · Primary CTA: "WOOX Pro로 시작" |
-| 출력(UI) | 비교 카드(헤드라인, 절약 금액 USDT, %p, "일반 유저/기본 등급 기준" 캡션, CTA 버튼, 접기 토글) |
+| 출력(UI) | 비교 카드(헤드라인, **현재 거래소 vs WOOX Pro 월 예상 캐시백 대비**(`currentExchangeEstimate`·`wooxProEstimate`), 절약 금액 USDT(`savingAmount`), %p(`savingPercentPoint`), "일반 유저/기본 등급 기준" 캡션, CTA 버튼, 접기 토글) |
 | 접기 정책 | 접기(collapse) **제공**(OI-05 확정). **강제 닫기(X) UI 없음**(REQ-012). 접힘/펼침 두 상태 모두 지원 |
 | 예외 처리 | `visible=false`(역효과·WOOX Pro 미지원 조건) → 비교 카드 미렌더, 기존 결과 화면만. 거래소=WOOX Pro 선택 시 **API 자체를 호출하지 않는다**(비교 카드 개념 불필요, REQ-010) |
 | 관련 화면 | S2 — PC·MO·App(웹뷰) |
@@ -134,7 +134,7 @@
 | 5개 위치 | #1 캐시백 프리뷰 결과 하단(S2) · #2 출금 결과 카드 하단 외부(S1) · #3 MO 로그인 전 버튼 아래(S4) · #4 PC 로그인 페이지 상단(S3) · #5 마이페이지 회원 ID 하단(S5) |
 | 예외 처리 | 위치별 백오피스 플래그 OFF면 해당 배너 미노출(#3·#4·#5는 `loginBanners` 일괄). App 환경은 S1·S2만 렌더, S3~S5는 네이티브라 렌더 대상 제외(§1.2) |
 | 관련 화면 | S1·S2 — PC·MO·App / S3·S4·S5 — Web(PC/MO)만 |
-| 관련 API | GET /api/promo/status (API-001, `active` + `travelRuleBanner.i18nKey` 사용) |
+| 관련 API | GET /api/promo/status (API-001) — 위치별 배너 플래그(`s1Banner`/`s2Banner`/`loginBanners`) + `travelRuleBanner.i18nKey` + `wooxProDetailUrl`(클릭 이동 목적지) 사용 |
 | 요구사항 | REQ-016~019 |
 
 ### F-005. 노출 제어 상태 반영 (백오피스 on/off)
@@ -163,7 +163,7 @@
 | S2 | 타 거래소 & `visible=false` (역효과·미지원) | 결과 카드만 + 배너 #1 |
 | S2 | WOOX Pro 선택 | 결과 카드만(API 미호출) + 배너 #1 |
 | S3~S5 | `loginBanners` ON | 위치별 배너만(#4/#3/#5) |
-| 전체 | 프로모션 비활성 | 넛지·배너 전부 미노출(base) |
+| 각 영역 | 백오피스 해당 플래그 OFF | 그 영역만 미노출(base). 전역 일괄 비활성 개념 없음 — 영역별 독립 |
 
 ---
 
@@ -178,6 +178,7 @@
 | F-003 `visible=false` | 비교 카드 미삽입, 결과 화면만 |
 | F-003 거래소=WOOX Pro | API 미호출, 비교 카드 없음 |
 | F-003 400/404 | 입력 검증 후 비교 카드 미삽입(결과 화면 유지) |
+| F-003 500·타임아웃 | 비교 카드 미삽입, 기존 결과 화면만(넛지 실패가 결과 화면을 막지 않음) |
 | 시각 표시 필요 | UTC→기기 로컬 타임 변환(KST 고정 금지) |
 | App 환경 S3~S5 | 렌더 제외(네이티브) |
 

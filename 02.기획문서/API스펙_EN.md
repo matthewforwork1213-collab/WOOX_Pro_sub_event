@@ -20,7 +20,7 @@
 | Response Format | JSON |
 | Character Encoding | UTF-8 |
 | Multi-language | Responses do not embed translated text directly; they return only i18n keys. The actual copy is rendered per locale from the FE's multi-language resources (result values such as amounts and %p are an exception — the server returns these as numbers) |
-| Timezone | All timestamp fields are returned in **UTC (ISO 8601)**. Batch processing (KST 20:00) and promotion determination (D+30) are based on KST internally on the server, but API responses and on-screen display go through a UTC → **user device local timezone** conversion (applied at FE rendering time). Responses must not use fixed KST copy (NFR-007) |
+| Timezone | All timestamp fields are returned in **UTC (ISO 8601)**. Batch processing (KST 20:00) is based on KST internally on the server, but API responses and on-screen display go through a UTC → **user device local timezone** conversion (applied at FE rendering time). Responses must not use fixed KST copy (NFR-007). (2026-07-07: D+30 auto-determination abolished — period controlled by backoffice) |
 
 ### Common Error Codes
 
@@ -78,7 +78,8 @@
     "loginBanners": true,
     "travelRuleBanner": {
       "i18nKey": "promo.travelrule.badge"
-    }
+    },
+    "wooxProDetailUrl": "https://.../exchange/woox-pro"
   }
 }
 ```
@@ -87,6 +88,7 @@
 - `s1Banner`·`s2Banner`·`loginBanners`: Whether the Travel Rule banner is shown (#2 / #1 / #3·#4·#5 collectively) (F-004)
 - `s2Compare`: Whether the Cashback Preview WOOX Pro comparison (F-003) is shown. If false, the comparison card is not inserted (REQ-020~022)
 - `travelRuleBanner.i18nKey`: The i18n key for the banner copy (the logo image is hardcoded in the design, so it is not delivered via the API, REQ-017)
+- `wooxProDetailUrl`: **The WOOX Pro exchange detail URL to navigate to when a CTA or the Travel Rule banner is clicked** (admin onboarding-registered value, OI-06). Feature 1 CTA · Feature 2 CTA · Feature 3 banner all navigate to this value. Must be retrievable even pre-login (S3·S4)
 
 **Error Response**
 
@@ -119,8 +121,8 @@
     "case": "non_woox_pro",
     "visible": true,
     "savingAmount": 26.0,
-    "savingPercentPoint": 15.0,
-    "exchangeCount": 2
+    "savingPercentPoint": 26.0,
+    "exchangeCount": 1
   }
 }
 ```
