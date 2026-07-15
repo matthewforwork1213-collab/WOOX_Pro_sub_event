@@ -476,7 +476,8 @@
   // 별도 완결 페이지(backoffice.html)를 iframe으로 임베드. 같은 origin이라 localStorage(wooxpromo_admin) 공유.
   // 백오피스에서 토글 변경 → storage 이벤트로 유저 화면 실시간 반영(하단 리스너).
   function renderBackoffice() {
-    stage().innerHTML = '<iframe class="admin-frame" src="backoffice.html" title="백오피스 · 프로모션 노출 제어"></iframe>';
+    // cleanUrls: true(vercel.json) → 확장자 없는 클린 URL(/backoffice) 사용. /backoffice.html은 404.
+    stage().innerHTML = '<iframe class="admin-frame" src="backoffice" title="백오피스 · 프로모션 노출 제어"></iframe>';
   }
 
   // ---------------- 마운트 헬퍼 ----------------
