@@ -512,6 +512,19 @@
     });
   }
 
+  // 상단 메뉴 탭 라벨(한/영). 영문 원문을 사전 키로 사용 → i18n.js가 ko 모드에서 번역.
+  var TAB_LABELS = {
+    s1: 'S1 · Withdrawal Complete', s2: 'S2 · Cashback Preview', login: 'Login',
+    mweb: 'Mobile · Pre-login', mypage: 'My Page', backoffice: 'Backoffice'
+  };
+  function applyTabLabels() {
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (n) {
+      var k = n.getAttribute('data-screen');
+      if (!TAB_LABELS[k]) return;
+      n.textContent = (k === 'backoffice' ? '⚙ ' : '') + T(TAB_LABELS[k]);
+    });
+  }
+
   // ---------------- 시나리오 드로어 (개발용·한국어 고정) ----------------
   function renderDrawer() {
     var d = document.getElementById('drawer');
@@ -570,6 +583,7 @@
     langBtn.addEventListener('click', function () {
       window.setLang(window.__LANG === 'en' ? 'ko' : 'en');
       langBtn.textContent = window.__LANG === 'en' ? '한국어' : 'EN';
+      applyTabLabels();
       render();
     });
   }
@@ -577,5 +591,6 @@
   // 백오피스 페이지에서 on/off 변경 시(다른 탭) 실시간 반영
   window.addEventListener('storage', function (e) { if (e.key === ADMIN_KEY) render(); });
 
+  applyTabLabels();
   go('s1');
 })();

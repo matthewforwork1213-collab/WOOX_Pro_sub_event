@@ -6,6 +6,13 @@
 (function (g) {
   'use strict';
   var KO = {
+    // ---- 상단 메뉴 탭 ----
+    'S1 · Withdrawal Complete': 'S1 · 출금 완료',
+    'S2 · Cashback Preview': 'S2 · 캐시백 프리뷰',
+    'Mobile · Pre-login': '모바일-로그인 전',
+    'My Page': '마이페이지',
+    'Backoffice': '백오피스',
+
     // ---- 트레블룰 배너 (기능 3, 스펙 정의) ----
     'Travel Rule Integration': '트레블룰 연동',
 
@@ -151,7 +158,11 @@
     'Join Event ⧉': '이벤트 참여 ⧉'
   };
 
-  g.__LANG = 'en';
+  // 언어 상태는 localStorage에 저장해 유저 프로토타입과 백오피스(iframe)가 공유한다.
+  var LANG_KEY = 'wooxpromo_lang';
+  var saved;
+  try { saved = localStorage.getItem(LANG_KEY); } catch (e) { }
+  g.__LANG = (saved === 'ko' || saved === 'en') ? saved : 'en';
   g.t = function (s) { return (g.__LANG === 'ko' && KO[s] != null) ? KO[s] : s; };
-  g.setLang = function (l) { g.__LANG = l; };
+  g.setLang = function (l) { g.__LANG = l; try { localStorage.setItem(LANG_KEY, l); } catch (e) { } };
 })(window);

@@ -36,60 +36,114 @@
   </style>
 </head>
 <body>
-  <div class="top"><span class="brand">&#8734; TetherMax</span> <span class="tag">Backoffice &middot; 프로모션 노출 제어</span></div>
+  <div class="top"><span class="brand">&#8734; TetherMax</span> <span class="tag" data-i18n="tag"></span></div>
   <div class="wrap">
-    <h1>WOOX Pro 프로모션 &mdash; 영역별 노출 on/off</h1>
-    <div class="sub">각 영역의 표시 여부를 관리자가 직접 on/off로 제어합니다. 저장 즉시 유저 화면에 반영됩니다.</div>
-    <div class="policy">
-      <b>정책 변경 (2026-07-07)</b> &mdash; 기존 "2개 WOOX Pro 이벤트 종속(OR) + D+30 자동 종료" 게이트를 <b>폐지</b>하고, 아래 영역별 on/off로 전면 통제합니다.<br />
-      2026-07-07 <b>C레벨 결정</b>: 프로모션 <b>기간을 어드민(백오피스)에서 통제</b>합니다(D+30 자동 종료 폐지). 기존 OI-07("30일 한정·상시화 미적용")을 갱신합니다.
-    </div>
+    <h1 data-i18n="h1"></h1>
+    <div class="sub" data-i18n="sub"></div>
+    <div class="policy" data-i18n-html="policy"></div>
 
     <div class="group">
-      <h2>출금 완료 (S1)</h2>
+      <h2 data-i18n="g_s1"></h2>
       <div class="row" data-key="s1Feedback">
-        <div><span class="label">WOOX Pro 가상 피드백 안내</span><div class="desc">WOOX Pro 미포함 출금 시 "더 아낄 수 있었어요" 안내</div></div>
+        <div><span class="label" data-i18n="s1Feedback_label"></span><div class="desc" data-i18n="s1Feedback_desc"></div></div>
         <div style="display:flex;align-items:center"><span class="state"></span><span class="switch"><span class="knob"></span></span></div>
       </div>
       <div class="row" data-key="s1Banner">
-        <div><span class="label">빗썸 트레블룰 배너</span><span class="pos">#2</span><div class="desc">출금 결과 카드 하단</div></div>
+        <div><span class="label" data-i18n="banner_label"></span><span class="pos">#2</span><div class="desc" data-i18n="s1Banner_desc"></div></div>
         <div style="display:flex;align-items:center"><span class="state"></span><span class="switch"><span class="knob"></span></span></div>
       </div>
     </div>
 
     <div class="group">
-      <h2>캐시백 프리뷰 (S2)</h2>
+      <h2 data-i18n="g_s2"></h2>
       <div class="row" data-key="s2Compare">
-        <div><span class="label">WOOX Pro 비교 안내</span><div class="desc">결과 카드 아래 인라인 비교 카드</div></div>
+        <div><span class="label" data-i18n="s2Compare_label"></span><div class="desc" data-i18n="s2Compare_desc"></div></div>
         <div style="display:flex;align-items:center"><span class="state"></span><span class="switch"><span class="knob"></span></span></div>
       </div>
       <div class="row" data-key="s2Banner">
-        <div><span class="label">빗썸 트레블룰 배너</span><span class="pos">#1</span><div class="desc">프리뷰 결과 하단</div></div>
+        <div><span class="label" data-i18n="banner_label"></span><span class="pos">#1</span><div class="desc" data-i18n="s2Banner_desc"></div></div>
         <div style="display:flex;align-items:center"><span class="state"></span><span class="switch"><span class="knob"></span></span></div>
       </div>
     </div>
 
     <div class="group">
-      <h2>로그인 관련 3페이지 (일괄)</h2>
+      <h2 data-i18n="g_login"></h2>
       <div class="row" data-key="loginBanners">
-        <div><span class="label">빗썸 트레블룰 배너</span><span class="pos">#3·#4·#5</span><div class="desc">PC 로그인 · 모바일 로그인 전 · 마이페이지 — 세 위치 일괄 제어</div></div>
+        <div><span class="label" data-i18n="banner_label"></span><span class="pos">#3·#4·#5</span><div class="desc" data-i18n="loginBanners_desc"></div></div>
         <div style="display:flex;align-items:center"><span class="state"></span><span class="switch"><span class="knob"></span></span></div>
       </div>
     </div>
 
     <div class="toolbar">
-      <button class="btn" id="all-on">전체 ON</button>
-      <button class="btn" id="all-off">전체 OFF</button>
-      <a class="btn primary" href="./" target="_blank">&#9654; 유저 프로토타입 열기</a>
-      <span class="saved" id="saved">&#10003; 저장됨</span>
+      <button class="btn" id="all-on" data-i18n="allOn"></button>
+      <button class="btn" id="all-off" data-i18n="allOff"></button>
+      <a class="btn primary" href="./" target="_blank" data-i18n="openProto"></a>
+      <span class="saved" id="saved" data-i18n="saved"></span>
     </div>
-    <div class="note">
-      · 각 토글은 변경 즉시 저장됩니다(localStorage 키 <code>wooxpromo_admin</code>). 유저 프로토타입을 새로고침하면 반영됩니다.<br />
-      · 트레블룰 배너 클릭 시 WOOX Pro 거래소 상세로 이동합니다(기능 3 개정). ⚠️ 정적 정보 배너 전제였던 OI-09 법무 리스크 수용 재확인 필요.
-    </div>
+    <div class="note" data-i18n-html="note"></div>
   </div>
 
   <script>
+    // 언어: 유저 프로토타입과 공유(localStorage wooxpromo_lang). 기본 en.
+    var LANG_KEY = 'wooxpromo_lang';
+    function lang(){ try { var l = localStorage.getItem(LANG_KEY); return (l === 'ko' || l === 'en') ? l : 'en'; } catch(e){ return 'en'; } }
+    var I18N = {
+      en: {
+        tag: 'Backoffice · Promotion Visibility Control',
+        h1: 'WOOX Pro Promotion — Per-area Visibility on/off',
+        sub: 'An admin controls whether each area is shown via on/off. Changes apply to user screens immediately.',
+        policy: '<b>Policy change (2026-07-07)</b> — The previous gate ("dependent on 2 WOOX Pro events (OR) + auto-end at D+30") is <b>abolished</b> and replaced with the per-area on/off controls below.<br />2026-07-07 <b>C-level decision</b>: the promotion <b>period is controlled from admin (backoffice)</b> (D+30 auto-end abolished). This updates the previous OI-07 ("30-day limited, no always-on").',
+        g_s1: 'Withdrawal Complete (S1)',
+        g_s2: 'Cashback Preview (S2)',
+        g_login: 'Login-related 3 pages (batch)',
+        s1Feedback_label: 'WOOX Pro virtual feedback',
+        s1Feedback_desc: 'On non-WOOX-Pro withdrawal, show "you could have saved more"',
+        banner_label: 'Bithumb Travel Rule banner',
+        s1Banner_desc: 'Below the withdrawal result card',
+        s2Compare_label: 'WOOX Pro comparison',
+        s2Compare_desc: 'Inline comparison card below the result card',
+        s2Banner_desc: 'Below the preview result',
+        loginBanners_desc: 'PC login · Mobile pre-login · My Page — three positions controlled together',
+        allOn: 'All ON',
+        allOff: 'All OFF',
+        openProto: '▶ Open user prototype',
+        saved: '✓ Saved',
+        note: '· Each toggle is saved instantly (localStorage key <code>wooxpromo_admin</code>). Refresh the user prototype to apply.<br />· Clicking the Travel Rule banner navigates to the WOOX Pro exchange detail (Feature 3 revision). ⚠️ Legal-risk acceptance under the static info-banner premise (OI-09) needs re-confirmation.'
+      },
+      ko: {
+        tag: 'Backoffice · 프로모션 노출 제어',
+        h1: 'WOOX Pro 프로모션 — 영역별 노출 on/off',
+        sub: '각 영역의 표시 여부를 관리자가 직접 on/off로 제어합니다. 저장 즉시 유저 화면에 반영됩니다.',
+        policy: '<b>정책 변경 (2026-07-07)</b> — 기존 "2개 WOOX Pro 이벤트 종속(OR) + D+30 자동 종료" 게이트를 <b>폐지</b>하고, 아래 영역별 on/off로 전면 통제합니다.<br />2026-07-07 <b>C레벨 결정</b>: 프로모션 <b>기간을 어드민(백오피스)에서 통제</b>합니다(D+30 자동 종료 폐지). 기존 OI-07("30일 한정·상시화 미적용")을 갱신합니다.',
+        g_s1: '출금 완료 (S1)',
+        g_s2: '캐시백 프리뷰 (S2)',
+        g_login: '로그인 관련 3페이지 (일괄)',
+        s1Feedback_label: 'WOOX Pro 가상 피드백 안내',
+        s1Feedback_desc: 'WOOX Pro 미포함 출금 시 "더 아낄 수 있었어요" 안내',
+        banner_label: '빗썸 트레블룰 배너',
+        s1Banner_desc: '출금 결과 카드 하단',
+        s2Compare_label: 'WOOX Pro 비교 안내',
+        s2Compare_desc: '결과 카드 아래 인라인 비교 카드',
+        s2Banner_desc: '프리뷰 결과 하단',
+        loginBanners_desc: 'PC 로그인 · 모바일 로그인 전 · 마이페이지 — 세 위치 일괄 제어',
+        allOn: '전체 ON',
+        allOff: '전체 OFF',
+        openProto: '▶ 유저 프로토타입 열기',
+        saved: '✓ 저장됨',
+        note: '· 각 토글은 변경 즉시 저장됩니다(localStorage 키 <code>wooxpromo_admin</code>). 유저 프로토타입을 새로고침하면 반영됩니다.<br />· 트레블룰 배너 클릭 시 WOOX Pro 거래소 상세로 이동합니다(기능 3 개정). ⚠️ 정적 정보 배너 전제였던 OI-09 법무 리스크 수용 재확인 필요.'
+      }
+    };
+    function applyI18n(){
+      var d = I18N[lang()] || I18N.en;
+      document.documentElement.lang = lang();
+      document.querySelectorAll('[data-i18n]').forEach(function(el){
+        var k = el.getAttribute('data-i18n'); if (d[k] != null) el.textContent = d[k];
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(function(el){
+        var k = el.getAttribute('data-i18n-html'); if (d[k] != null) el.innerHTML = d[k];
+      });
+    }
+
     var KEY = 'wooxpromo_admin';
     var DEF = { s1Feedback:true, s1Banner:true, s2Compare:true, s2Banner:true, loginBanners:true };
     function load(){ try { return Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY)) || {}); } catch(e){ return Object.assign({}, DEF); } }
@@ -109,6 +163,9 @@
     });
     document.getElementById('all-on').addEventListener('click', function(){ Object.keys(DEF).forEach(function(k){ state[k]=true; }); save(state); paint(); });
     document.getElementById('all-off').addEventListener('click', function(){ Object.keys(DEF).forEach(function(k){ state[k]=false; }); save(state); paint(); });
+    // 부모(유저 프로토타입)에서 언어 변경 시 실시간 반영
+    window.addEventListener('storage', function(e){ if (e.key === LANG_KEY) applyI18n(); });
+    applyI18n();
     paint();
   </script>
 </body>
