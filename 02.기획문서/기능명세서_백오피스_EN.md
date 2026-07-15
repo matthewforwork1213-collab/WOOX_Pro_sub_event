@@ -10,6 +10,8 @@
 
 > The functional spec for the **visibility-control page** where an admin controls promotion visibility via on/off. For user-facing screen rendering and formulas, refer to the user-front functional specs.
 
+> **Menu location**: The visibility-control page is entered via a **'WOOX pro sub'** item at the **bottom of the existing admin GNB 'Event' menu**. No new top-level menu; it is placed below the existing Event sub-items (Event Reward Payment ~ Bitget Campaign - Volume).
+
 ---
 
 ## Feature List

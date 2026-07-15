@@ -121,5 +121,7 @@ flowchart TD
 | S3. Login Page (PC) | /login | Travel Rule Banner #4 | F-004, F-005 |
 | S4. Pre-Login Menu (MO) | / (Global Menu) | Travel Rule Banner #3 | F-004, F-005 |
 | S5. My Page (Post-Login) | /mypage | Travel Rule Banner #5 | F-004, F-005 |
+| B1. Visibility Control (Backoffice) | Admin GNB: **Event > WOOX pro sub** (newly added at the bottom) | Read/save on/off of the 5 promotion areas | F-005 (A-001~A-003) |
 
 > F-005 (Promotion Active Status Determination) is a gate commonly referenced by all 5 screens, so it is included in every row.
+> B1 is not a user screen but an admin backoffice page, newly added as a 'WOOX pro sub' item at the bottom of the existing admin 'Event' menu (no new top-level menu).

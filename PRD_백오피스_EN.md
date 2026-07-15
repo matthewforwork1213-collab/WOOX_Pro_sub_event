@@ -20,6 +20,7 @@
 | Background (policy change) | 2026-07-07 **C-level decision**: the previous "D+30 auto-termination + dependency on the 2 WOOX Pro events (OR)" gate is abolished, and the **promotion period and visibility are controlled from the backoffice**. Updates OI-07 ("launch + 30 days only, not made permanent") |
 | Target users | TetherMax operations/marketing admins (reuse of the existing admin permission system) |
 | New development scope | **One visibility-control page + admin read/save API** (other values — discount rate, payback rate, event registration, etc. — reuse the existing admin, not new) |
+| Menu location | A new **'WOOX pro sub'** item is added at the **bottom of the existing admin GNB 'Event' menu**. No new top-level menu is created; it is placed **below the existing Event sub-items** (Event Reward Payment ~ Bitget Campaign - Volume) |
 
 ---
 
