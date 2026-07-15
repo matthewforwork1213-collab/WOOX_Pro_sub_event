@@ -472,6 +472,13 @@
     onClick('[data-action="ev-go"]', function () { closeModal(); toast('거래소 이벤트로 이동 (프로토타입)'); });
   }
 
+  // ---------------- 백오피스 (노출 제어 페이지 임베드) ----------------
+  // 별도 완결 페이지(backoffice.html)를 iframe으로 임베드. 같은 origin이라 localStorage(wooxpromo_admin) 공유.
+  // 백오피스에서 토글 변경 → storage 이벤트로 유저 화면 실시간 반영(하단 리스너).
+  function renderBackoffice() {
+    stage().innerHTML = '<iframe class="admin-frame" src="backoffice.html" title="백오피스 · 프로모션 노출 제어"></iframe>';
+  }
+
   // ---------------- 마운트 헬퍼 ----------------
   function mountPhone(inner, dark) { stage().innerHTML = phoneOpen(dark) + inner + phoneClose(); }
   function mountDesktop(inner) { stage().innerHTML = inner; }
@@ -494,6 +501,7 @@
       case 'mweb': renderMweb(); break;
       case 'mypage': renderMypage(); break;
       case 'wooxdetail': renderWoox(); break;
+      case 'backoffice': renderBackoffice(); break;
     }
     renderDrawer();
   }
