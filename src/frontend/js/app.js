@@ -31,9 +31,9 @@
     { k: 'feedback', t: '가상 피드백(단일)', req: 'REQ-001~003' },
     { k: 'multi', t: '복수 UID 합산', req: 'REQ-004' },
     { k: 'adverse', t: '역효과→base', req: 'REQ-006' },
-    { k: 'woox_event', t: 'WOOX 포함·자체이벤트', req: 'REQ-005' },
-    { k: 'onboarding_event', t: 'WOOX 포함·온보딩', req: 'REQ-005' },
-    { k: 'house_ad', t: 'WOOX 포함·하우스', req: 'REQ-005' },
+    { k: 'tethermax_event', t: 'WOOX 포함·테더맥스타입', req: 'REQ-005' },
+    { k: 'woox_with_event', t: 'WOOX 포함·with타입', req: 'REQ-005' },
+    { k: 'base', t: 'WOOX 포함·둘다없음→base', req: 'REQ-005' },
     { k: 'error', t: 'API 실패→base', req: 'NFR-004' },
   ];
   var S2_MODES = [
@@ -128,7 +128,7 @@
     } else if (m === 'adverse') {
       body += sectionLabel('역효과(타 거래소 토탈세이빙 ≥ WOOX) → 미노출, base 폴백');
       body += eventAd('base');
-    } else if (m === 'woox_event' || m === 'onboarding_event' || m === 'house_ad') {
+    } else if (m === 'tethermax_event' || m === 'woox_with_event' || m === 'base') {
       var r3 = API.withdrawalFeedback({ wooxIncluded: true, eventTier: m });
       body += sectionLabel('WOOX Pro 포함 → 이벤트 분기: ' + m);
       body += eventAd(r3.data.eventType);
@@ -159,9 +159,9 @@
 
   function eventAd(type) {
     var title = T('Trade to win up to $100K prize pool'), tag = 'Bitget', color = EX.bitget.color;
-    if (type === 'woox_event') { title = T('WOOX Pro Launch Event · Up to 100 USDT'); tag = 'WOOX Pro'; color = EX.wooxpro.color; }
-    else if (type === 'onboarding_event') { title = T('TetherMax × WOOX Pro Onboarding Event'); tag = 'TetherMax'; color = '#1d4ed8'; }
-    else if (type === 'house_ad') { title = T('Earn cashback on every trade with TetherMax'); tag = 'TetherMax'; color = '#1d4ed8'; }
+    if (type === 'tethermax_event') { title = T('TetherMax × WOOX Pro Onboarding Event'); tag = 'TetherMax'; color = '#1d4ed8'; }
+    else if (type === 'woox_with_event') { title = T('WOOX Pro Launch Event · Up to 100 USDT'); tag = 'WOOX Pro'; color = EX.wooxpro.color; }
+    // 'base' → 기존 base 이벤트 로직 (기본값 = 진행 중 거래소 이벤트, 오버라이드 없음)
     return '<div class="center"><div class="h2" style="text-align:center">' + T('Explore This Limited-Time Event') + '</div></div>' +
       '<div class="event-ad">' +
       '<span class="ex-tag"><span class="exlogo" style="background:' + color + '">' + tag.charAt(0) + '</span>' + tag + '</span>' +
@@ -175,7 +175,7 @@
     onClick('[data-action="s1-compare"]', gotoWoox);
     onClick('[data-action="event-learnmore"]', function (e) {
       var ty = e.currentTarget.getAttribute('data-type');
-      if (ty === 'woox_event' || ty === 'onboarding_event') gotoWoox(); else openExchangeEvent();
+      if (ty === 'tethermax_event' || ty === 'woox_with_event') gotoWoox(); else openExchangeEvent();
     });
     onClick('[data-action="event-close"]', function () { toast('이벤트를 닫았습니다 (프로토타입)'); });
     bindBanner();

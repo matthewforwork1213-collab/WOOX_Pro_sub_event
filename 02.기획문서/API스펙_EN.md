@@ -104,13 +104,13 @@
 |---|---|
 | Method | GET |
 | URL | /api/promo/withdrawal-feedback |
-| Description | Based on the list of withdrawal UIDs, returns Virtual Feedback (F-001) when WOOX Pro is not included, and the event branch (F-002) when WOOX Pro is included. Distinguished by the `case` field in the response |
+| Description | Based on the list of withdrawal (exchange, UID) pairs, returns Virtual Feedback (F-001) when WOOX Pro is not included, and the event branch (F-002) when WOOX Pro is included. Distinguished by the `case` field in the response |
 
 **Request**
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| uids | string (comma-separated) | Y | List of UIDs for this withdrawal completion. When withdrawing from multiple exchanges simultaneously, pass them comma-separated |
+| withdrawals | string (comma-separated `exchange:uid` pairs) | Y | List of (exchange, UID) pairs for this withdrawal completion. **The same UID can exist on different exchanges**, so a UID alone cannot identify the withdrawal source; each item must be passed as `exchange:uid` (e.g., `bitget:474834459,zoomex:889900`). When withdrawing from multiple exchanges simultaneously, separate pairs with commas. The server looks up the batch payback by the (exchange, uid) key |
 
 **Response (200 OK) — Case A: WOOX Pro Not Included (F-001)**
 
@@ -130,7 +130,7 @@
 - If `visible: false`, Virtual Feedback is not displayed, and it falls back to F-002 (not applicable) or the base event logic (REQ-001, REQ-006)
 - `savingAmount`: Savings amount (USDT) on a Total Saving basis; a value already corrected to 1 by the server if it would otherwise be under 1 USDT (REQ-003)
 - `savingPercentPoint`: **Nominal Total Saving Rate (WOOX Pro) − Nominal Total Saving Rate (current exchange)**, Correction Factor not applied (REQ-024, PRD §2-A-1)
-- `exchangeCount`: Number of UIDs included in the savings sum (for the N-exchange caption, REQ-004)
+- `exchangeCount`: **Distinct number of exchanges** included in the savings sum (for the "based on N exchanges" caption, REQ-004). Even if one exchange has 2+ UIDs, it counts as 1 exchange (e.g., 3 exchanges · 4 UIDs → `exchangeCount=3`). Calculation/summing is per UID; only the caption number is the distinct-exchange count
 
 **Response (200 OK) — Case B: WOOX Pro Included (F-002)**
 
@@ -139,19 +139,19 @@
   "status": "success",
   "data": {
     "case": "woox_pro_included",
-    "eventType": "woox_event"
+    "eventType": "tethermax_event"
   }
 }
 ```
 
-- `eventType`: One of `woox_event` (WOOX Pro's own event), `onboarding_event` (TetherMax Onboarding Event), or `house_ad` (general House Ad) (REQ-005)
+- `eventType`: One of `tethermax_event` (TetherMax-type event), `woox_with_event` (WOOX Pro "with-type" event), or `base` (neither exists → run the existing base event logic) (REQ-005). Priority: `tethermax_event` > `woox_with_event` > `base`; random 1 if a tier has 2+ candidates. The "WOOX Pro's own event" / "house ad" values are removed (2026-07-07)
 - Detailed event content (banner image, copy) is queried separately from the existing event admin data (reuses the existing API)
 
 **Error Response**
 
 | Status Code | Error Code | Condition |
 |---|---|---|
-| 400 | BAD_REQUEST | Missing `uids` parameter or format error |
+| 400 | BAD_REQUEST | Missing `withdrawals` parameter or format error (not `exchange:uid` pairs) |
 | 500 | INTERNAL_ERROR | Calculation failure — in this case the FE falls back to base logic (see 기능명세서_FE_EN.md F-001 exception handling) |
 
 ---

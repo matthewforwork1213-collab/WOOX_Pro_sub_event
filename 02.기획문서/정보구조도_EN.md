@@ -57,17 +57,17 @@ flowchart TD
     CheckOnb1 -->|Yes| OnbEvt1[Show Onboarding Event]
     CheckOnb1 -->|No| BaseAd
 
-    CheckWoox -->|Yes| CheckWooxEvt{WOOX Pro's Own Event Active?}
-    CheckWooxEvt -->|Yes| WooxEvt[Show WOOX Pro Event]
-    CheckWooxEvt -->|No| CheckOnb2{Onboarding Event Active?}
-    CheckOnb2 -->|Yes| OnbEvt2[Show Onboarding Event]
-    CheckOnb2 -->|No| HouseAd[Show General House Ad]
+    CheckWoox -->|Yes| CheckTM{TetherMax-type Event Active?}
+    CheckTM -->|Yes| TMEvt[Show TetherMax-type Event]
+    CheckTM -->|No| CheckWith{WOOX Pro "with-type" Event Active?}
+    CheckWith -->|Yes| WithEvt[Show WOOX Pro "with-type" Event]
+    CheckWith -->|No| BaseB[Existing Base Event Logic]
 
     VirtualFeedback --> End([Screen Displayed])
     OnbEvt1 --> End
-    WooxEvt --> End
-    OnbEvt2 --> End
-    HouseAd --> End
+    TMEvt --> End
+    WithEvt --> End
+    BaseB --> End
     BaseAd --> End
 ```
 

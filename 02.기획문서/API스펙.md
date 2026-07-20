@@ -104,13 +104,13 @@
 |---|---|
 | Method | GET |
 | URL | /api/promo/withdrawal-feedback |
-| 설명 | 출금 UID 목록을 기준으로, WOOX Pro 미포함 시 가상 피드백(F-001)을, WOOX Pro 포함 시 이벤트 분기(F-002)를 반환한다. 응답의 `case` 필드로 구분한다 |
+| 설명 | 출금 (거래소, UID) 쌍 목록을 기준으로, WOOX Pro 미포함 시 가상 피드백(F-001)을, WOOX Pro 포함 시 이벤트 분기(F-002)를 반환한다. 응답의 `case` 필드로 구분한다 |
 
 **Request**
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| uids | string (콤마 구분) | Y | 이번 출금 완료 건의 UID 목록. 복수 거래소 동시 출금 시 콤마로 구분해 전달 |
+| withdrawals | string (콤마 구분 `exchange:uid` 쌍) | Y | 이번 출금 완료 건의 (거래소, UID) 쌍 목록. **같은 UID가 서로 다른 거래소에 존재할 수 있어** UID 단독으로는 출금원을 식별할 수 없으므로 각 항목을 `exchange:uid` 형식으로 전달한다(예: `bitget:474834459,zoomex:889900`). 복수 거래소 동시 출금 시 콤마로 구분. 서버는 (exchange, uid) 키로 배치 페이백을 조회한다 |
 
 **Response (200 OK) — Case A: WOOX Pro 미포함 (F-001)**
 
@@ -130,7 +130,7 @@
 - `visible: false`면 가상 피드백을 노출하지 않고 F-002(해당 없음) 또는 base 이벤트 로직으로 폴백 (REQ-001, REQ-006)
 - `savingAmount`: 토탈 세이빙 기준 절약 금액(USDT), 1 USDT 미만은 서버에서 1로 보정 완료된 값 (REQ-003)
 - `savingPercentPoint`: **명목 토탈세이빙율(WOOX Pro) − 명목 토탈세이빙율(현재 거래소)**, 보정계수 미반영 (REQ-024, PRD §2-A-1)
-- `exchangeCount`: 절약액 합산에 포함된 UID 수(N개 거래소 기준 캡션용, REQ-004)
+- `exchangeCount`: 절약액 합산에 포함된 **중복 제거(distinct) 거래소 수**("N개 거래소 기준" 캡션용, REQ-004). 같은 거래소에 UID가 2개 이상이어도 거래소는 1로 카운트한다(예: 3개 거래소·4개 UID → `exchangeCount=3`). 계산·합산은 UID 단위로 수행하되 캡션 숫자만 거래소 distinct 카운트
 
 **Response (200 OK) — Case B: WOOX Pro 포함 (F-002)**
 
@@ -139,19 +139,19 @@
   "status": "success",
   "data": {
     "case": "woox_pro_included",
-    "eventType": "woox_event"
+    "eventType": "tethermax_event"
   }
 }
 ```
 
-- `eventType`: `woox_event`(WOOX Pro 자체 이벤트) / `onboarding_event`(테더맥스 온보딩 이벤트) / `house_ad`(일반 하우스 광고) 중 하나 (REQ-005)
+- `eventType`: `tethermax_event`(테더맥스 타입 이벤트) / `woox_with_event`(WOOX Pro with 타입 이벤트) / `base`(둘 다 없음 → 기존 base 이벤트 로직 실행) 중 하나 (REQ-005). 우선순위 `tethermax_event` > `woox_with_event` > `base`, 각 단계 후보 2개 이상이면 랜덤 1개. "WOOX Pro 자체 이벤트"·"하우스 광고" 값 폐지(2026-07-07)
 - 이벤트 상세 콘텐츠(배너 이미지·문구)는 기존 이벤트 어드민 데이터를 별도 조회(기존 API 재사용)
 
 **에러 Response**
 
 | 상태 코드 | 에러 코드 | 조건 |
 |---|---|---|
-| 400 | BAD_REQUEST | `uids` 파라미터 누락 또는 형식 오류 |
+| 400 | BAD_REQUEST | `withdrawals` 파라미터 누락 또는 형식 오류(`exchange:uid` 쌍 아님) |
 | 500 | INTERNAL_ERROR | 계산 실패 — 이 경우 FE는 base 로직으로 폴백 (기능명세서_FE F-001 예외 처리) |
 
 ---

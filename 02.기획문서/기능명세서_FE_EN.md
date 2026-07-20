@@ -99,10 +99,10 @@ Each feature detail (§2) references this section rather than repeating it.
 
 | Item | Content |
 |---|---|
-| Description | Withdrawals including WOOX Pro are branched and shown in the order of (1) WOOX Pro's own event (2) TetherMax Onboarding Event (3) general house ad |
+| Description | Withdrawals including WOOX Pro branch in the order of (1) TetherMax-type event (2) WOOX Pro "with-type" event; if neither exists, (3) fall back to the existing base event logic (the "own event" and "house ad" concepts are removed, 2026-07-07) |
 | Input | Screen entry event, list of withdrawal UIDs |
-| Processing | Render the corresponding ad component per the `eventType` (`woox_event`/`onboarding_event`/`house_ad`) in the BE response |
-| Output (UI) | Ad card per event type (WOOX Pro's own event banner / Onboarding Event banner / general house ad). Event detail content reuses existing event data |
+| Processing | Render per the `eventType` (`tethermax_event`/`woox_with_event`/`base`) in the BE response. If `base`, show no promo card and run the existing base event logic (1 random ongoing exchange event) |
+| Output (UI) | Ad card per event type (TetherMax-type event banner / WOOX Pro "with-type" event banner), or `base` = existing event ad. Event detail content reuses existing event data |
 | Exception Handling | On API failure, fall back to the existing base logic ("randomly show 1 ongoing exchange event") |
 | Related Screens | S1 — PC·MO·App (webview) |
 | Related API | GET /api/promo/withdrawal-feedback (API-002, Case B — same endpoint, branched by `case`) |

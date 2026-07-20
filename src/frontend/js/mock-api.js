@@ -47,7 +47,7 @@
 
     // Case B: WOOX Pro 포함 → 이벤트 분기 (F-002)
     if (params.wooxIncluded) {
-      const tier = params.eventTier || 'woox_event';
+      const tier = params.eventTier || 'tethermax_event';
       return { status: 'success', data: { case: 'woox_pro_included', eventType: tier } };
     }
 

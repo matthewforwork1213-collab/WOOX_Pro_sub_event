@@ -49,9 +49,9 @@
 | A-1 | WOOX Pro not included & savings > 0 & calculable (amounts under 1 USDT are displayed as 1 USDT) | Virtual Feedback card ("If it had been WOOX Pro, +X USDT") |
 | A-2 | A-1 not possible (adverse case/not calculable) & Onboarding Event active | TetherMax WOOX Pro Onboarding Event |
 | A-3 | Neither A-1 nor A-2 possible | Existing house/exchange event (base fallback) |
-| B-1 | WOOX Pro included & WOOX Pro's own event active | WOOX Pro Event (highest priority) |
-| B-2 | WOOX Pro included & no own event | TetherMax Onboarding Event |
-| B-3 | Neither B-1 nor B-2 possible | TetherMax general house ad |
+| B-1 | WOOX Pro included & TetherMax-type event active (random 1 if 2+) | TetherMax-type event (highest priority) |
+| B-2 | No TetherMax-type event & WOOX Pro "with-type" event active (random 1 if 2+) | WOOX Pro "with-type" event |
+| B-3 | Neither B-1 nor B-2 possible | Existing base event logic (1 random ongoing exchange event) |
 
 - Virtual Feedback display method: **Finalized on a Total Saving basis** (OI-08, 2026-07-03). Only 1 framing type is needed for the draft: "You could have saved OOO USDT more."
 - Simultaneous withdrawal across multiple exchanges (UID): sum only the positive UIDs that are not adverse cases into a **single total amount** + lowercase note "based on N exchanges · standard user/base tier". **Even with many UIDs (5+), do not list them individually — keep a single total amount** (optional: expandable via "View Details" — a design option).

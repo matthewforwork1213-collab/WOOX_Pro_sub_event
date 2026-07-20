@@ -141,12 +141,26 @@ additional savings = current net cost − WOOX Pro net cost
 
 | Step | Calculation | Value |
 |---|---|---|
-| base fee | 54 ÷ 0.54 | 100 USDT |
+| base fee (reverse-calc) | 54 ÷ 0.54 | 100 USDT |
 | current net cost | 100 × (1 − 0.54) | 46 USDT |
 | WOOX Pro net cost | 100 × (1 − 0.80) | 20 USDT |
-| additional savings | 46 − 20 | **26 USDT** |
+| additional savings (`savingAmount`) | 46 − 20 | **26 USDT** |
+| `savingPercentPoint` | nominal TS diff = 80% − 54% (§2.3) | **26%p** |
 
-→ "With WOOX Pro, you could have saved 26 USDT more in fees"
+→ "With WOOX Pro, you could have saved 26 USDT (26%p) more in fees"
+
+⚠️ **`savingPercentPoint` is NOT proportional to `savingAmount`.** In this single-UID case both happen to be 26 by coincidence; %p is always the nominal Total Saving Rate difference (§2.3), independent of the amount.
+
+**Multiple-UID example** (Bitget 54% + Zoomex 60%, actual payback 54·36 USDT respectively, Discount Rate 0)
+
+| UID | actual payback | base fee | current net cost | WOOX net cost | additional savings |
+|---|---|---|---|---|---|
+| Bitget (54%) | 54 | 100 | 46 | 20 | 26 |
+| Zoomex (60%) | 36 | 60 | 24 | 12 | 12 |
+| **Sum** | | **160** | | | **38** |
+
+- `savingAmount` = **38 USDT** (after <1 display-floor correction)
+- `savingPercentPoint` = total additional savings ÷ Σ base fee = 38 ÷ 160 = **23.8%p** (§2.3 base-fee weighted average — neither the arithmetic mean 27%p nor the amount 38)
 
 ### 2.5 Feature 2 — Monthly Estimated Cashback (Preview Projection)
 
@@ -196,10 +210,10 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 
 | Item | Content |
 |---|---|
-| Description | Receives a list of withdrawal UIDs, reverse-calculates the actual payback amount (§2.4), and derives the WOOX Pro Virtual Feedback savings amount |
-| Input | `uids` (list of withdrawal UIDs, comma-separated, multiple possible), user identifier (session) |
+| Description | Receives a list of withdrawal (exchange, UID) pairs, reverse-calculates the actual payback amount (§2.4), and derives the WOOX Pro Virtual Feedback savings amount |
+| Input | `withdrawals` (list of (exchange, UID) pairs, comma-separated `exchange:uid`, multiple possible). **The same UID can exist on different exchanges**, so a UID alone is not identifiable → it must be paired with the exchange, and the batch payback is looked up by the (exchange, uid) key. + user identifier (session) |
 | Processing | 1) Check the backoffice `s1Feedback` flag — if OFF, immediately `visible=false` (§1.1) 2) For each UID, look up the actual payback amount from the user UID table (KST 20:00 batch data, §1.6) 3) For each UID, compute **base fee reverse-calculation → additional savings** using the exchange's Discount Rate·Payback Rate (§2.4) 4) Per-UID adverse-case decision: if another exchange's nominal Total Saving Rate ≥ WOOX Pro (80%), mark that UID as adverse-case and exclude it from the sum (§1.4) 5) Sum only the UIDs that are non-adverse & have a positive savings amount into a **single total** 6) If the sum is less than 1 USDT, correct to 1; if 0 or less, `visible=false` (§1.5) 7) For multiple UIDs, unify `savingPercentPoint` via the **base-fee weighted average** (§2.3; no simple sum, no arithmetic mean) |
-| Output Fields | `case`="non_woox_pro", `visible` (bool), `savingAmount` (USDT, Total Saving basis, value after <1 correction), `savingPercentPoint` (nominal %p — for multiple UIDs, §2.3 base-fee weighted average), `exchangeCount` (number of UIDs included in the sum, for the "based on N exchanges" caption) |
+| Output Fields | `case`="non_woox_pro", `visible` (bool), `savingAmount` (USDT, Total Saving basis, value after <1 correction), `savingPercentPoint` (nominal %p — for multiple UIDs, §2.3 base-fee weighted average), `exchangeCount` (**distinct number of exchanges** included in the sum, for the "based on N exchanges" caption — an exchange with 2+ UIDs still counts as 1, e.g., 3 exchanges·4 UIDs → 3) |
 | Exception Handling | No batch payback data for a specific UID → exclude only that UID from calculation (not an error). Calculation impossible for all UIDs → `visible=false`. Calculation failure (500) → FE base fallback. The batch-lag notice time is returned in UTC, and the FE converts to local (§1.2) |
 | Related Screen | S1 (Withdrawal Completion Screen) |
 | Related API | GET /api/promo/withdrawal-feedback (API-002, Case A) |
@@ -210,10 +224,10 @@ Each feature assumes the §1 common policies and §2 calculation model. Field na
 | Item | Content |
 |---|---|
 | Description | Decides, by priority, the event type to display for withdrawal cases that include WOOX Pro |
-| Input | `uids` (to determine WOOX Pro inclusion), Admin-registered event list |
-| Processing (3-step priority) | 1) (WOOX-included event branching runs regardless of any visibility flag) 2) WOOX Pro's own event is registered active in the Admin → `eventType=woox_event` (**absolute priority**: WOOX Pro takes priority even if a concurrent withdrawal has another exchange's event) 3) If none, TetherMax WOOX Pro Onboarding Event active → `eventType=onboarding_event` 4) If neither, `eventType=house_ad`. Competitor exchange events are excluded from candidates (partnership protection) |
-| Output Fields | `case`="woox_pro_included", `eventType` (`woox_event`/`onboarding_event`/`house_ad`). Event details such as banner image·copy reuse existing event Admin data (separate lookup) |
-| Exception Handling | When `active=false`, reverts to the **original base logic (show 1 randomly selected ongoing exchange event)** without promotion event branching. `house_ad` is the tier-3 content while the promotion is active, so it is distinguished from the revert target (original base) on termination |
+| Input | `withdrawals` (to determine WOOX Pro inclusion — (exchange, UID) pairs), Admin-registered event list |
+| Processing (3-step priority) | 1) (WOOX-included event branching runs regardless of any visibility flag) 2) A **TetherMax-type event** is registered active in the Admin → `eventType=tethermax_event` (random 1 if 2+ candidates) 3) If none, a **WOOX Pro `with`-type event** is active → `eventType=woox_with_event` (random 1 if 2+ candidates) 4) If neither, `eventType=base` (existing base event logic = 1 random ongoing exchange event). Competitor exchange events are excluded from candidates (partnership protection). The **"WOOX Pro's own event" and "house ad" concepts are removed** (correction 2026-07-07). The WOOX Pro `exchange`-type is not used in this branch |
+| Output Fields | `case`="woox_pro_included", `eventType` (`tethermax_event`/`woox_with_event`/`base`). Event details such as banner image·copy reuse existing event Admin data (separate lookup). `base` signals the FE to run the existing base event logic |
+| Exception Handling | On event-branch API failure, revert to the **existing base logic (show 1 randomly selected ongoing exchange event)**. `eventType=base` (tiers 1·2 unmet) is also rendered via the existing base logic — no separate promo card. (With the D+30 / event-dependent gate removed, F-002 has no separate visibility on/off) |
 | Related Screen | S1 (Withdrawal Completion Screen) |
 | Related API | GET /api/promo/withdrawal-feedback (API-002, Case B — same endpoint as F-001, branched by `case`) |
 | Requirements | REQ-005 |

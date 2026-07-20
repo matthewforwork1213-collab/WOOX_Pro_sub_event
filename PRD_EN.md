@@ -39,9 +39,9 @@ When a user completes a withdrawal (including simultaneous withdrawals across mu
 
 | Priority | Condition | Content Displayed |
 |------|------|-----------|
-| 1 | WOOX Pro's own running event **exists** | Display the **WOOX Pro event** with top priority |
-| 2 | No own event & the TetherMax WOOX Pro Onboarding Event is active | Display the **TetherMax WOOX Pro Onboarding Event** |
-| 3 | Neither #1 nor #2 exists | Display a **general TetherMax House Ad** |
+| 1 | A **TetherMax-type event** is active (random 1 if 2+) | Display the **TetherMax-type event** |
+| 2 | No TetherMax-type event & a **WOOX Pro "with-type" event** is active (random 1 if 2+) | Display the **WOOX Pro "with-type" event** |
+| 3 | Neither #1 nor #2 exists | Fall back to the **existing base event logic** (1 random ongoing exchange event) |
 
 (See §2-A-3 for the detailed branching logic)
 
@@ -132,7 +132,7 @@ This is the implementation detail for branches (a)~(d) within §2's Features 1 a
 
 **Commission Rate is not used** in user-screen calculations. Since the value the user actually receives back is "the fee the user actually paid × Payback Rate," the comparison is established using **Payback Rate** alone (or, including the discount, the **Total Saving Rate**). Commission Rate (90%) and Margin Rate are for back-office internal settlement purposes and are unrelated to user-facing calculations.
 
-> **Feature 1 and Feature 2 have completely independent data sources with no interrelation** (confirmed 2026-07-03). Feature 1 reverse-calculates from **actually occurred historical data** in the user UID Table. Feature 2 (Cashback Preview), independent of the UID Table, is a pure projection where — since the user's actual trading volume is unknown — **a predetermined formula computes a predicted value from inputs (assets, leverage, frequency, etc.) alone**. Below, the "Nominal basis" is exclusive to Feature 1, and the "Preview basis" is exclusive to Feature 2; they do not share data with each other.
+> **Feature 1 and Feature 2 have completely independent data sources with no interrelation** (confirmed 2026-07-03). Feature 1 reverse-calculates from **actually occurred historical data** in the user UID Table. (Each withdrawal is identified by an `(exchange, UID)` pair — **the same UID can exist on different exchanges**, so a UID alone cannot pinpoint the withdrawal source; both the API request and the batch lookup are handled paired with the exchange.) Feature 2 (Cashback Preview), independent of the UID Table, is a pure projection where — since the user's actual trading volume is unknown — **a predetermined formula computes a predicted value from inputs (assets, leverage, frequency, etc.) alone**. Below, the "Nominal basis" is exclusive to Feature 1, and the "Preview basis" is exclusive to Feature 2; they do not share data with each other.
 
 **Core Metric Definition (Nominal basis — applied to Feature 1 · actual measured data)**
 
@@ -181,7 +181,10 @@ Copy framing: "You could have saved/can save **OOO USDT** more in fees if you ha
 
 - Base Fee = 54 ÷ 54% = **100 USDT**
 - Current Net Cost = 100 × 46% = 46, WOOX Pro Net Cost = 100 × 20% = 20
-- **Additional Savings = 26 USDT** → "You could have saved 26 USDT more in fees if you had used WOOX Pro"
+- **`savingAmount` = Additional Savings = 26 USDT**
+- **`savingPercentPoint` = nominal TS diff = 80% − 54% = 26%p** (correction factor not applied)
+- → "You could have saved 26 USDT (26%p) more in fees if you had used WOOX Pro"
+- ⚠️ **%p is NOT proportional to the savings amount.** In this single-UID case both happen to be 26 by coincidence. For multiple UIDs (e.g. Bitget 54% + Zoomex 60%, payback 54·36), `savingAmount`=38 USDT but `savingPercentPoint`=38÷160=**23.8%p** (base-fee weighted average, 기능명세서_BE §2.3·§2.4) — the values diverge.
 - Note: When exchanges with a Discount Rate are mixed in, the result differs from the Payback Rate basis, but since the Total Saving basis accurately reflects the actual savings, this method was confirmed.
 
 **Feature 2 Exclusive — Cashback Preview Projection Formula (Monthly Estimated Cashback)**
@@ -253,11 +256,12 @@ Total Saving Rate_Preview(E) = 1 − (1 − Discount Rate(E)) × (1 − Payback 
 
 | Priority | Content Displayed | Condition |
 |------|------|------|
-| 1 | WOOX Pro's own event | WOOX Pro event active |
-| 2 | TetherMax WOOX Pro Onboarding Event (= "TetherMax-type event") | When #1 does not exist & is active |
-| 3 | TetherMax general house ad | When neither #1 nor #2 exists |
+| 1 | TetherMax-type event | TetherMax-type event active (random 1 if 2+) |
+| 2 | WOOX Pro "with-type" event | When #1 absent & active (random 1 if 2+) |
+| 3 | Existing base event logic (1 random ongoing exchange event) | When neither #1 nor #2 exists |
 
-- The WOOX Pro event has **absolute priority** (WOOX Pro takes priority even if another exchange's event exists in a simultaneous withdrawal).
+- Priority: **TetherMax-type event > WOOX Pro "with-type" event > (if neither) existing base logic**. If a tier has 2+ candidates, pick 1 at random. The **"WOOX Pro's own event" and "house ad" concepts are removed** (C-level branching correction, 2026-07-07).
+- **Event-type data model**: once WOOX Pro is registered as an exchange, its exchange events may have `with`/`exchange` types, and **separately a `tethermax`-type event** exists. Case B decides `tethermax`-type first, then WOOX Pro `with`-type; the WOOX Pro `exchange`-type is not used in this branch.
 - Event existence is determined **based on Admin registration**. Competing exchange events are not displayed (partnership protection).
 
 ### 2-A-4. (c) Other Exchange Selected → WOOX Pro Comparison Card Inserted Inline
@@ -334,9 +338,9 @@ The WOOX Pro Comparison Card is not inserted, and only the normal payback result
 │       (if not possible: fall back to Onboarding Event → base event, in that order, §2-A-2)
 │
 └── Withdrawal Including WOOX Pro
-    ├── WOOX Pro's own event exists → Display WOOX Pro event with top priority
-    ├── No own event & Onboarding Event active → TetherMax WOOX Pro Onboarding Event
-    └── Neither exists → General TetherMax House Ad
+    ├── TetherMax-type event exists → Display TetherMax-type event (random 1 if 2+)
+    ├── Absent & WOOX Pro "with-type" event exists → Display WOOX Pro "with-type" event
+    └── Neither exists → Existing base event logic (1 random ongoing exchange event)
 
 [After Entering the Payback Preview Result Page]
 │
