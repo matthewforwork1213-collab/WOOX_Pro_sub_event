@@ -144,7 +144,7 @@
 }
 ```
 
-- `eventType`: `tethermax_event`(테더맥스 타입 이벤트) / `woox_with_event`(WOOX Pro with 타입 이벤트) / `base`(둘 다 없음 → 기존 base 이벤트 로직 실행) 중 하나 (REQ-005). 우선순위 `tethermax_event` > `woox_with_event` > `base`, 각 단계 후보 2개 이상이면 랜덤 1개. "WOOX Pro 자체 이벤트"·"하우스 광고" 값 폐지(2026-07-07)
+- `eventType`: `tethermax_event`(테더맥스 타입) / `woox_with_event`(WOOX Pro with 타입) / `base`(타 거래소 with 타입 = WOOX 제외, 기존 base 로직) 중 하나 (REQ-005). 우선순위 `tethermax_event` > `woox_with_event` > `base`, 각 단계 후보 2개 이상이면 랜덤 1개. **이벤트 타입은 테더맥스 타입·with 타입(거래소별) 2종뿐** — 시안 라벨 매핑: 하우스·온보딩=테더맥스 타입 / self=WOOX Pro with / counter·base=타 거래소 with. "자체 이벤트"·"하우스 광고" 값 폐지(2026-07-07)
 - 이벤트 상세 콘텐츠(배너 이미지·문구)는 기존 이벤트 어드민 데이터를 별도 조회(기존 API 재사용)
 
 **에러 Response**

@@ -41,7 +41,7 @@ When a user completes a withdrawal (including simultaneous withdrawals across mu
 |------|------|-----------|
 | 1 | A **TetherMax-type event** is active (random 1 if 2+) | Display the **TetherMax-type event** |
 | 2 | No TetherMax-type event & a **WOOX Pro "with-type" event** is active (random 1 if 2+) | Display the **WOOX Pro "with-type" event** |
-| 3 | Neither #1 nor #2 exists | Fall back to the **existing base event logic** (1 random ongoing exchange event) |
+| 3 | Neither #1 nor #2 exists | **Other-exchange "with-type" event** (excluding WOOX Pro = existing base logic, 1 random ongoing exchange event) |
 
 (See §2-A-3 for the detailed branching logic)
 
@@ -258,10 +258,11 @@ Total Saving Rate_Preview(E) = 1 − (1 − Discount Rate(E)) × (1 − Payback 
 |------|------|------|
 | 1 | TetherMax-type event | TetherMax-type event active (random 1 if 2+) |
 | 2 | WOOX Pro "with-type" event | When #1 absent & active (random 1 if 2+) |
-| 3 | Existing base event logic (1 random ongoing exchange event) | When neither #1 nor #2 exists |
+| 3 | Other-exchange "with-type" event (excluding WOOX Pro = existing base logic, 1 random ongoing exchange event) | When neither #1 nor #2 exists |
 
-- Priority: **TetherMax-type event > WOOX Pro "with-type" event > (if neither) existing base logic**. If a tier has 2+ candidates, pick 1 at random. The **"WOOX Pro's own event" and "house ad" concepts are removed** (C-level branching correction, 2026-07-07).
-- **Event-type data model**: once WOOX Pro is registered as an exchange, its exchange events may have `with`/`exchange` types, and **separately a `tethermax`-type event** exists. Case B decides `tethermax`-type first, then WOOX Pro `with`-type; the WOOX Pro `exchange`-type is not used in this branch.
+- Priority: **TetherMax-type event > WOOX Pro "with-type" event > (if neither) other-exchange "with-type" event (existing base logic)**. If a tier has 2+ candidates, pick 1 at random.
+- **Event-type definition (company-standard terms)**: there are only **two** event types — **① TetherMax-type** (TetherMax's own events) and **② with-type** (per-exchange events, identified by owning exchange). "self event", "house ad", and "onboarding event" are instances, not standalone types, and are removed (correction 2026-07-07).
+- **Design-label → canonical-type mapping**: "House"·"Onboarding" = **TetherMax-type** / "self event" = **WOOX Pro with-type** / "Counter·base" = **other-exchange with-type** (excluding WOOX Pro).
 - Event existence is determined **based on Admin registration**. Competing exchange events are not displayed (partnership protection).
 
 ### 2-A-4. (c) Other Exchange Selected → WOOX Pro Comparison Card Inserted Inline
@@ -340,7 +341,7 @@ The WOOX Pro Comparison Card is not inserted, and only the normal payback result
 └── Withdrawal Including WOOX Pro
     ├── TetherMax-type event exists → Display TetherMax-type event (random 1 if 2+)
     ├── Absent & WOOX Pro "with-type" event exists → Display WOOX Pro "with-type" event
-    └── Neither exists → Existing base event logic (1 random ongoing exchange event)
+    └── Neither exists → Other-exchange "with-type" event (excluding WOOX = existing base, 1 random ongoing exchange event)
 
 [After Entering the Payback Preview Result Page]
 │

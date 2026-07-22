@@ -144,7 +144,7 @@
 }
 ```
 
-- `eventType`: One of `tethermax_event` (TetherMax-type event), `woox_with_event` (WOOX Pro "with-type" event), or `base` (neither exists → run the existing base event logic) (REQ-005). Priority: `tethermax_event` > `woox_with_event` > `base`; random 1 if a tier has 2+ candidates. The "WOOX Pro's own event" / "house ad" values are removed (2026-07-07)
+- `eventType`: One of `tethermax_event` (TetherMax-type), `woox_with_event` (WOOX Pro with-type), or `base` (other-exchange with-type = excluding WOOX, existing base logic) (REQ-005). Priority: `tethermax_event` > `woox_with_event` > `base`; random 1 if a tier has 2+ candidates. **There are only two event types: TetherMax-type and with-type (per-exchange)** — label mapping: House·Onboarding = TetherMax-type / self = WOOX Pro with / counter·base = other-exchange with. The "own event" / "house ad" values are removed (2026-07-07)
 - Detailed event content (banner image, copy) is queried separately from the existing event admin data (reuses the existing API)
 
 **Error Response**
