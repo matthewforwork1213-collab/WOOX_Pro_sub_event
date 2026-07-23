@@ -104,13 +104,13 @@
 |---|---|
 | Method | GET |
 | URL | /api/promo/withdrawal-feedback |
-| 설명 | 출금 (거래소, UID) 쌍 목록을 기준으로, WOOX Pro 미포함 시 가상 피드백(F-001)을, WOOX Pro 포함 시 이벤트 분기(F-002)를 반환한다. 응답의 `case` 필드로 구분한다 |
+| 설명 | 출금(페이백 신청) 건의 paybackNo 목록을 기준으로, WOOX Pro 미포함 시 가상 피드백(F-001)을, WOOX Pro 포함 시 이벤트 분기(F-002)를 반환한다. 응답의 `case` 필드로 구분한다 |
 
 **Request**
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| withdrawals | string (콤마 구분 `exchange:uid` 쌍) | Y | 이번 출금 완료 건의 (거래소, UID) 쌍 목록. **같은 UID가 서로 다른 거래소에 존재할 수 있어** UID 단독으로는 출금원을 식별할 수 없으므로 각 항목을 `exchange:uid` 형식으로 전달한다(예: `bitget:474834459,zoomex:889900`). 복수 거래소 동시 출금 시 콤마로 구분. 서버는 (exchange, uid) 키로 배치 페이백을 조회한다 |
+| paybackNos | string (콤마 구분, 서버 발급 paybackNo) | Y | 이번 출금(페이백 신청) 건의 **paybackNo(페이백 신청 레코드 ID) 목록**. 각 paybackNo 레코드는 **출금 신청 완료 시점에 생성**되며 (거래소·UID·신청 페이백 금액·이벤트 리워드)를 담는다. 서버는 **paybackNo로 레코드를 조회**해 거래소·UID·페이백을 resolve한다 → 클라이언트가 `exchange:uid`를 조립할 필요 없음. WOOX 포함·영(0)페이백 건도 레코드가 있어 F-002까지 식별 가능. 복수 거래소 동시 출금 시 콤마로 구분(예: `100234,100235`) |
 
 **Response (200 OK) — Case A: WOOX Pro 미포함 (F-001)**
 
@@ -151,7 +151,7 @@
 
 | 상태 코드 | 에러 코드 | 조건 |
 |---|---|---|
-| 400 | BAD_REQUEST | `withdrawals` 파라미터 누락 또는 형식 오류(`exchange:uid` 쌍 아님) |
+| 400 | BAD_REQUEST | `paybackNos` 파라미터 누락 또는 형식 오류 |
 | 500 | INTERNAL_ERROR | 계산 실패 — 이 경우 FE는 base 로직으로 폴백 (기능명세서_FE F-001 예외 처리) |
 
 ---

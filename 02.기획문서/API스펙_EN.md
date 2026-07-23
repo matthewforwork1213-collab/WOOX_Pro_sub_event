@@ -104,13 +104,13 @@
 |---|---|
 | Method | GET |
 | URL | /api/promo/withdrawal-feedback |
-| Description | Based on the list of withdrawal (exchange, UID) pairs, returns Virtual Feedback (F-001) when WOOX Pro is not included, and the event branch (F-002) when WOOX Pro is included. Distinguished by the `case` field in the response |
+| Description | Based on the list of paybackNo for the withdrawal (payback-request) records, returns Virtual Feedback (F-001) when WOOX Pro is not included, and the event branch (F-002) when WOOX Pro is included. Distinguished by the `case` field in the response |
 
 **Request**
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| withdrawals | string (comma-separated `exchange:uid` pairs) | Y | List of (exchange, UID) pairs for this withdrawal completion. **The same UID can exist on different exchanges**, so a UID alone cannot identify the withdrawal source; each item must be passed as `exchange:uid` (e.g., `bitget:474834459,zoomex:889900`). When withdrawing from multiple exchanges simultaneously, separate pairs with commas. The server looks up the batch payback by the (exchange, uid) key |
+| paybackNos | string (comma-separated, server-issued paybackNo) | Y | List of **paybackNo (payback-request record IDs)** for this withdrawal (payback request). Each paybackNo record is **created at the withdrawal-request-complete moment** and carries the (exchange · UID · requested payback amount · event reward). The server **resolves exchange · UID · payback by looking up the record via paybackNo** → the client does not assemble `exchange:uid`. WOOX-included and zero-payback withdrawals also have a record, so F-002 is identifiable too. When withdrawing from multiple exchanges simultaneously, separate with commas (e.g., `100234,100235`) |
 
 **Response (200 OK) — Case A: WOOX Pro Not Included (F-001)**
 
@@ -151,7 +151,7 @@
 
 | Status Code | Error Code | Condition |
 |---|---|---|
-| 400 | BAD_REQUEST | Missing `withdrawals` parameter or format error (not `exchange:uid` pairs) |
+| 400 | BAD_REQUEST | Missing `paybackNos` parameter or format error |
 | 500 | INTERNAL_ERROR | Calculation failure — in this case the FE falls back to base logic (see 기능명세서_FE_EN.md F-001 exception handling) |
 
 ---
