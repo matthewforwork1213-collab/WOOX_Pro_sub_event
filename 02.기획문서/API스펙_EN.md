@@ -31,7 +31,7 @@
 | 404 | NOT_FOUND | Resource not found (e.g., a non-existent exchange ID) |
 | 500 | INTERNAL_ERROR | Internal server error |
 
-> Promotion-related APIs do not treat "display condition not met" as an error. Adverse cases, unsupported cases, calculation failures, etc. are returned as 200 OK + `visible: false` (see 기능명세서_BE_EN.md F-001 · F-003 exception handling).
+> Promotion-related APIs do not treat "display condition not met" as an error. Adverse cases, calculation failures, etc. are returned as 200 OK + `visible: false` (see 기능명세서_BE_EN.md F-001 exception handling). F-003 (cashback comparison) is FE-calculated, so its adverse-case/unsupported judgment is performed on the FE (API-003 removed).
 
 ---
 
@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | API-001 | GET | /api/promo/status | Query promotion visibility (5 flags) — user front | F-004, F-005 |
 | API-002 | GET | /api/promo/withdrawal-feedback | Query virtual feedback/event branch after withdrawal completion | F-001, F-002 |
-| API-003 | POST | /api/promo/cashback-preview/compare | Query WOOX Pro comparison for cashback preview | F-003 |
+| ~~API-003~~ | ~~POST~~ | ~~/api/promo/cashback-preview/compare~~ | **(Removed)** F-003 is FE-calculated — see the API-003 section below | F-003 |
 | API-B01 | GET | /api/admin/promo/visibility | **Backoffice** — query visibility-control settings | A-001 |
 | API-B02 | PUT | /api/admin/promo/visibility | **Backoffice** — save visibility-control settings (on/off) | A-002 |
 
@@ -156,52 +156,13 @@
 
 ---
 
-### API-003. Query WOOX Pro Comparison for Cashback Preview
+### API-003. (Removed) Query WOOX Pro Comparison for Cashback Preview
 
-| Item | Content |
-|---|---|
-| Method | POST |
-| URL | /api/promo/cashback-preview/compare |
-| Description | Using the preview conditions entered by the user, calculates the Monthly Estimated Cashback for both the current exchange and WOOX Pro, and returns the comparison result on a Total Saving basis |
-
-**Request**
-
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| exchange | string | Y | ID of the current exchange selected by the user (when it is WOOX Pro, the default contract is that the FE does not call this endpoint, REQ-010) |
-| balance | number | Y | Asset size (USDT) |
-| leverage | number | Y | Leverage multiple |
-| makerRatio | number (0~100) | Y | Maker trade ratio (%). Must sum to 100 with takerRatio |
-| takerRatio | number (0~100) | Y | Taker trade ratio (%). Must sum to 100 with makerRatio |
-| dailyTradeFrequency | enum | Y | Trade frequency band. `0_1` (0~1 times) / `1_2` (1~2 times) / `2_5` (2~5 times) / `5_10` (5~10 times) / `10_PLUS` (10+ times) — see the TIME mapping table in PRD §2-A-1 |
-
-**Response (200 OK)**
-
-```json
-{
-  "status": "success",
-  "data": {
-    "visible": true,
-    "currentExchangeEstimate": 945.00,
-    "wooxProEstimate": 1512.00,
-    "savingAmount": 567.00,
-    "savingPercentPoint": 30.0
-  }
-}
-```
-
-- If `visible: false`, the comparison card is not displayed — conditions: Adverse Case (the other exchange's preview-specific Total Saving Rate ≥ WOOX Pro's), WOOX Pro not supported (leverage/product), or `exchange` is already WOOX Pro (REQ-011)
-- `currentExchangeEstimate` / `wooxProEstimate`: The respective Monthly Estimated Cashback result values (with the 0.7 Correction Factor already applied). Raw data such as Discount Rate, Payback Rate, and Correction Factor are not included in the response (REQ-023)
-- `savingAmount`: Savings difference (USDT) on a Total Saving basis, with the 0.7 Correction Factor applied (OI-08 confirmed)
-- `savingPercentPoint`: **Nominal Total Saving Rate (WOOX Pro) − Nominal Total Saving Rate (current exchange)**, Correction Factor not applied — since the formula differs from `savingAmount`, it is not a simple proportional relationship (REQ-024)
-
-**Error Response**
-
-| Status Code | Error Code | Condition |
-|---|---|---|
-| 400 | BAD_REQUEST | makerRatio + takerRatio ≠ 100, or a required parameter is missing |
-| 404 | NOT_FOUND | Non-existent `exchange` ID |
-| 500 | INTERNAL_ERROR | Calculation failure. If the admin's "TetherMax Applied" field double-multiplication bug (OI-10) remains unfixed, result accuracy cannot be guaranteed, so this API must not be deployed to production until that bug fix is complete (see 기능명세서_BE_EN.md F-003) |
+> **Removed 2026-07** — the Cashback Preview (F-003) is **calculated on the front-end** (reusing the existing preview engine). A separate comparison endpoint is unnecessary, so API-003 is removed (BE-confirmed, 2026-07).
+> - **Comparison calc (FE)**: the FE itself computes the Monthly Estimated Cashback for the current exchange and WOOX Pro (0.7 correction applied), the savings amount (USDT), and the nominal %p.
+> - **Visibility gate**: backoffice `s2Compare` (API-001) is ON **AND** the FE's adverse-case/unsupported check passes. **Adverse-case guard** (Business Rule #1, REQ-011) — if the other exchange's preview-specific Total Saving rate is **≥** WOOX Pro's, do **not** show; show only when WOOX Pro is **strictly greater (>)**. WOOX-Pro-unsupported (leverage/product) and `exchange`=WOOX Pro are also skipped by the FE (REQ-010·011).
+> - **Compliance**: commission/margin rates are not used in the calc (Rule #7), and raw internal rates are not exposed as client constants (Rule #6, REQ-023). Only the 0.7 correction factor is hard-coded.
+> - OI-10 (admin "TetherMax Applied" double-multiplication bug) remains a precondition for preview-calc accuracy.
 
 ---
 

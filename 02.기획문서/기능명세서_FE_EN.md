@@ -114,13 +114,13 @@ Each feature detail (§2) references this section rather than repeating it.
 |---|---|
 | Description | On the Cashback Preview Result Page (S2), when another exchange is selected, a WOOX Pro Comparison Card is inserted **inline directly below the existing result card, with no popup or dim** |
 | Input | Preview input values (exchange·asset scale·leverage·Maker/Taker ratio·trade frequency), comparison card collapse toggle click |
-| Processing | 1) Pass the preview input values as-is to BE to request the comparison result 2) If `visible=true`, render the comparison card below the result card (expanded by default) 3) On collapse button click, toggle expand/collapse using local state only (no re-request) 4) Render with the **Total Saving basis copy template** (OI-08 confirmed) |
+| Processing | 1) **Calculated on the FE** (reusing the existing preview engine; API-003 removed) — compute the Monthly Estimated Cashback for the current exchange and WOOX Pro (0.7 correction applied), `savingAmount`, and nominal `savingPercentPoint` 2) **Visibility = `s2Compare` (API-001) ON AND the FE adverse-case/unsupported check**: adverse-case guard (Business Rule #1, REQ-011) — if the other exchange's preview-specific Total Saving rate is **≥** WOOX Pro's, do not show; show only when WOOX Pro is **strictly greater (>)**. WOOX-Pro-unsupported (leverage/product) is also skipped 3) If satisfied, render inline below the result card (expanded by default) 4) Collapse toggle uses local state (no recompute) 5) Render with the **Total Saving basis copy template** (OI-08). **Commission/margin rates unused (Rule #7); no raw internal rates exposed (Rule #6), only 0.7 hard-coded** |
 | Copy Template | Headline: "You're losing out with the exchange you selected right now" · Sub: "With WOOX Pro, estimated monthly savings: **+{savingAmount} USDT ({savingPercentPoint}%p)**" · Primary CTA: "Start with WOOX Pro" |
 | Output (UI) | Comparison Card (headline, **current exchange vs WOOX Pro monthly estimated cashback** (`currentExchangeEstimate`·`wooxProEstimate`), savings amount USDT (`savingAmount`), %p (`savingPercentPoint`), "standard user / base tier basis" caption, CTA button, collapse toggle) |
 | Collapse Policy | Collapse **provided** (OI-05 confirmed). **No forced close (X) UI** (REQ-012). Both collapsed/expanded states supported |
-| Exception Handling | `visible=false` (counter-effect·WOOX Pro unsupported condition) → comparison card not rendered, existing result screen only. When exchange=WOOX Pro is selected, **the API itself is not called** (comparison card concept unnecessary, REQ-010) |
+| Exception Handling | FE judgment = not shown (adverse case·WOOX Pro unsupported) → comparison card not rendered, existing result screen only. When exchange=WOOX Pro is selected, no comparison card (concept unnecessary, REQ-010). If `s2Compare`=OFF, the whole area is skipped |
 | Related Screens | S2 — PC·MO·App (webview) |
-| Related API | POST /api/promo/cashback-preview/compare (API-003) |
+| Related API | GET /api/promo/status (API-001) — `s2Compare` visibility gate. (Comparison values are FE-calculated; API-003 removed) |
 | Requirements | REQ-008~015 |
 
 ### F-004. WOOX Pro × Bithumb Travel Rule Integration Banner (5 Locations)
@@ -172,13 +172,12 @@ Each feature detail (§2) references this section rather than repeating it.
 | Situation | FE Behavior |
 |---|---|
 | Status API (F-005) failure | Safe default all OFF, nudges·banners not shown |
-| F-001 `visible=false` | Card not shown → Onboarding Event → house ad fallback |
+| F-001 `visible=false` | Card not shown → TetherMax-type event → other-exchange with-type (base) fallback |
 | F-001/F-002 API failure·500 | Existing base event logic fallback |
-| F-001 400 (`uids` format error) | base event logic fallback (rare — `uids` is a system-provided value) |
-| F-003 `visible=false` | Comparison card not inserted, result screen only |
-| F-003 exchange=WOOX Pro | API not called, no comparison card |
-| F-003 400/404 | After input validation, comparison card not inserted (result screen maintained) |
-| F-003 500 · timeout | Comparison card not inserted, existing result screen only (a nudge failure must not block the result screen) |
+| F-001 400 (`paybackNos` format error) | base event logic fallback (rare — `paybackNos` is a system-provided value) |
+| F-003 FE judgment = not shown (adverse·unsupported) | Comparison card not inserted, result screen only |
+| F-003 exchange=WOOX Pro | No comparison card (concept unnecessary) |
+| F-003 `s2Compare`=OFF / preview calc failure | Comparison card not inserted, existing result screen maintained (a nudge failure must not block the result screen) |
 | Time display needed | UTC→device local time conversion (fixed KST prohibited) |
 | App environment S3~S5 | Excluded from rendering (native) |
 
